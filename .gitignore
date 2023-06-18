@@ -4,3 +4,4 @@
 !dictation/*py
 dictation/pronunciation_checker.py
 !.gitignore
+!vocabulary.xlsx
