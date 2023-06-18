@@ -1,6 +1,6 @@
 # created by virtualenv automatically
-Lib
-Scripts
-pyvenv.cfg
-.idea
-
+*
+!dictation
+!dictation/*py
+dictation/pronunciation_checker.py
+!.gitignore
