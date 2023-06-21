@@ -30,7 +30,8 @@ class MainChecker:
                              "verbs": SheetsSchemes.verbs,
                              "adjectives": SheetsSchemes.adjectives,
                              "other": SheetsSchemes.other,
-                             "IrregularVerbsPresent": SheetsSchemes.irregular_verbs_present}
+                             "IrregularVerbsPresent": SheetsSchemes.irregular_verbs_present,
+                             "pronouns": SheetsSchemes.pronouns}
 
     def __init__(self, words_row: list, word_type: str) -> None:
         self.current_scheme = self.corresponding_schemes.get(word_type, SheetsSchemes.other)
@@ -46,7 +47,7 @@ class MainChecker:
 class Dictation:
     def __init__(self) -> None:
         self.word_type = input("What words do you want to learn?"
-                               "(nouns/verbs/adjectives/other/IrregularVerbsPresent/numerals)\n")
+                               "(nouns/verbs/adjectives/other/IrregularVerbsPresent/numerals/pronouns)\n")
         self.get_all = True if input("Get all words?(y/n)") == "y" else False
         self.with_audio = True if input("Check pronunciation?(y/n)") == "y" else False
         self.words = self.prepare_words(self.word_type)
