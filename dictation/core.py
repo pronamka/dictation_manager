@@ -62,6 +62,13 @@ class SheetsSchemes:
                   "pronunciation": 1}
              ]}
 
+    pronouns = {"translation": 3,
+                "to_check": [
+                    {"comment_spelling": "Type the word: ",
+                     "spelling": 0,
+                     "pronunciation": 1}
+                ]}
+
 
 class BaseChecker(ABC):
     def __init__(self, comment: str, word: str):
