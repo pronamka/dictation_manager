@@ -6,7 +6,7 @@ class WordNotCompleted(Exception):
 
 
 class SheetsSchemes:
-    nouns = {"translation": 4,
+    nouns = {"translation": 5,
              "to_check": [
                  {"comment_spelling": "Type singular noun with definite article",
                   "comment_pronunciation": "Pronounce singular noun without an article",
@@ -19,7 +19,7 @@ class SheetsSchemes:
                   "pronunciation": 3}
              ]}
 
-    verbs = {"translation": 2,
+    verbs = {"translation": 3,
              "to_check": [
                  {"comment_spelling": "Type the verb in the infinitive form",
                   "comment_pronunciation": "Pronounce the verb in the infinitive form",
@@ -46,7 +46,7 @@ class SheetsSchemes:
                                     "pronunciation": 9},
                                ]}
 
-    adjectives = {"translation": 2,
+    adjectives = {"translation": 3,
                   "to_check": [
                       {"comment_spelling": "Type the adjective: ",
                        "comment_pronunciation": "Pronounce the adjective: ",
