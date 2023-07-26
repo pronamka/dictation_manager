@@ -54,7 +54,7 @@ class SheetsSchemes:
                        "pronunciation": 1}
                   ]}
 
-    other = {"translation": 2,
+    other = {"translation": 3,
              "to_check": [
                  {"comment_spelling": "Type the word(s): ",
                   "comment_pronunciation": "Pronounce the word(s): ",
