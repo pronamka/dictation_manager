@@ -45,9 +45,14 @@ class MainChecker:
 
 
 class Dictation:
+    sheets = ["nouns", "verbs", "adjectives", "other", "numerals", "pronouns", "IrregularVerbsPresent", ]
+
     def __init__(self) -> None:
         self.word_type = input("What words do you want to learn?"
-                               "(nouns/verbs/adjectives/other/IrregularVerbsPresent/numerals/pronouns)\n")
+                               f"({'/'.join(self.sheets)})\n")
+        while self.word_type not in self.sheets:
+            print("No such sheet!")
+            self.word_type = input(f"Please, choose one of those: {'/'.join(self.sheets)}. \n")
         self.get_all = True if input("Get all words?(y/n)") == "y" else False
         self.with_audio = True if input("Check pronunciation?(y/n)") == "y" else False
         self.words = self.prepare_words(self.word_type)
@@ -57,7 +62,7 @@ class Dictation:
         words = pandas.read_excel(PATH_TO_VOCABULARY, sheet_name=word_type)
         words = numpy.array(words)
         if not self.get_all:
-            words = words[int(input("Range of words starts at: "))-2:int(input("Range of words ends at: "))-2]
+            words = words[int(input("Range of words starts at: "))-2:int(input("Range of words ends at: "))-1]
         numpy.random.shuffle(words)
         return words.tolist()
 
