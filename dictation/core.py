@@ -46,6 +46,25 @@ class SheetsSchemes:
                                     "pronunciation": 9},
                                ]}
 
+    irregular_verbs_past = {"translation": 10,
+                               "to_check": [
+                                   {"comment_spelling": "Type the verb in the infinitive form",
+                                    "spelling": 0,
+                                    "pronunciation": 1},
+                                   {"comment_spelling": "Type the verb in the past 1st/3rd person singular form",
+                                    "spelling": 2,
+                                    "pronunciation": 3},
+                                   {"comment_spelling": "Type the verb in the past 2nd person singular form",
+                                    "spelling": 4,
+                                    "pronunciation": 5},
+                                   {"comment_spelling": "Type the verb in the past 1st/3rd person plural form",
+                                    "spelling": 6,
+                                    "pronunciation": 7},
+                                   {"comment_spelling": "Type the verb in the past 2nd person plural form",
+                                    "spelling": 8,
+                                    "pronunciation": 9},
+                               ]}
+
     adjectives = {"translation": 3,
                   "to_check": [
                       {"comment_spelling": "Type the adjective: ",
