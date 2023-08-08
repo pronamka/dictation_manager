@@ -31,6 +31,7 @@ class MainChecker:
                              "adjectives": SheetsSchemes.adjectives,
                              "other": SheetsSchemes.other,
                              "IrregularVerbsPresent": SheetsSchemes.irregular_verbs_present,
+                             "IrregularVerbsPast": SheetsSchemes.irregular_verbs_past,
                              "pronouns": SheetsSchemes.pronouns}
 
     def __init__(self, words_row: list, word_type: str) -> None:
@@ -45,7 +46,9 @@ class MainChecker:
 
 
 class Dictation:
-    sheets = ["nouns", "verbs", "adjectives", "other", "numerals", "pronouns", "IrregularVerbsPresent", ]
+    sheets = ["nouns", "verbs", "adjectives", "other",
+              "numerals", "pronouns", "IrregularVerbsPresent",
+              "IrregularVerbsPast", ]
 
     def __init__(self) -> None:
         self.word_type = input("What words do you want to learn?"
