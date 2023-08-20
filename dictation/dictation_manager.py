@@ -46,7 +46,7 @@ class MainChecker:
 
 
 class Dictation:
-    sheets = ["nouns", "verbs", "adjectives", "other",
+    sheets = ["nouns", "adjectives", "verbs", "other",
               "numerals", "pronouns", "IrregularVerbsPresent",
               "IrregularVerbsPast", ]
 
