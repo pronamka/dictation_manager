@@ -3,5 +3,7 @@
 !dictation
 !dictation/*py
 dictation/pronunciation_checker.py
+dictation/test.py
+dictation/test1.py
 !.gitignore
 !vocabulary.xlsx
