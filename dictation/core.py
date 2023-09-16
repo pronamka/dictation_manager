@@ -93,7 +93,8 @@ class BaseChecker(ABC):
     def __init__(self, comment: str, word: str):
         self.comment = comment
         self.original_word = word
-        self.words = word.strip().lstrip().split("/")
+        self.diff_words = word.strip().lstrip().split("|")
+        self.words_variations = [i.split("/") for i in self.diff_words]
 
     @abstractmethod
     def check(self):
