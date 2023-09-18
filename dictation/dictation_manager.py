@@ -34,12 +34,15 @@ class MainChecker:
                              "IrregularVerbsPast": SheetsSchemes.irregular_verbs_past,
                              "pronouns": SheetsSchemes.pronouns}
 
-    def __init__(self, words_row: list, word_type: str) -> None:
+    def __init__(self, words_row: list, word_type: str, needs_revision_only: bool) -> None:
         self.current_scheme = self.corresponding_schemes.get(word_type, SheetsSchemes.other)
         self.word_translation = words_row[self.current_scheme.get("translation")]
         self.word_row = words_row
+        self.needs_revision_only = needs_revision_only
 
     def check(self) -> None:
+        if self.word_row[self.current_scheme.get("needs_revision", 0)] != 1.0 and self.needs_revision_only:
+            return
         print(f"Russian: {self.word_translation}")
         for row in self.current_scheme.get("to_check"):
             CheckerManager(self.word_row, row).check()
@@ -58,6 +61,7 @@ class Dictation:
             self.word_type = input(f"Please, choose one of those: {'/'.join(self.sheets)}. \n")
         self.get_all = True if input("Get all words?(y/n)") == "y" else False
         self.with_audio = True if input("Check pronunciation?(y/n)") == "y" else False
+        self.needs_revision_only = True if input("Only those that need revision?(y/n)") == "y" else False
         self.words = self.prepare_words(self.word_type)
 
     def prepare_words(self, word_type: str) -> numpy.array:
@@ -75,7 +79,7 @@ class Dictation:
             words = []
             for i in self.words:
                 try:
-                    MainChecker(list(i), self.word_type).check()
+                    MainChecker(list(i), self.word_type, self.needs_revision_only).check()
                 except WordNotCompleted:
                     words.append(i)
             if words:
