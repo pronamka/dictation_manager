@@ -32,10 +32,10 @@ class SpellChecker(BaseChecker):
             answer_index = words_plain.get(answer, None)
 
             if answer == "1":
-                print(f"The word is: {words[0]}")
+                print(f"The word is: {words.values()}")
                 return
             elif answer == "2":
-                print(f"The word was: {words[0]}")
+                print(f"The word was: {words.values()}")
                 input("Now type it to remember.\n")
                 print(self.transcription)
                 print("OK. You will return to this word when you've "
