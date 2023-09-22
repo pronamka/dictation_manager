@@ -3,9 +3,8 @@ from random import shuffle
 import pandas
 import numpy
 
-from core import SheetsSchemes, WordNotCompleted, PATH_TO_VOCABULARY
+from core import SheetsSchemes, WordNotCompleted, PATH_TO_VOCABULARY, DictWithDefaultReturn, SheetScheme
 from spelling_checker import SpellChecker
-# from pronunciation_checker import PronunciationChecker
 
 
 class CheckerManager:
@@ -26,67 +25,96 @@ class CheckerManager:
 
 
 class MainChecker:
-    corresponding_schemes = {"nouns": SheetsSchemes.nouns,
-                             "verbs": SheetsSchemes.verbs,
-                             "adjectives": SheetsSchemes.adjectives,
-                             "other": SheetsSchemes.other,
-                             "IrregularVerbsPresent": SheetsSchemes.irregular_verbs_present,
-                             "IrregularVerbsPast": SheetsSchemes.irregular_verbs_past,
-                             "pronouns": SheetsSchemes.pronouns}
 
-    def __init__(self, words_row: list, word_type: str, needs_revision_only: bool) -> None:
-        self.current_scheme = self.corresponding_schemes.get(word_type, SheetsSchemes.other)
-        self.word_translation = words_row[self.current_scheme.get("translation")]
+    def __init__(self, words_row: list, row_scheme: SheetScheme) -> None:
+        self.current_scheme = row_scheme
+        self.word_translation = words_row[row_scheme.translation]
         self.word_row = words_row
-        self.needs_revision_only = needs_revision_only
 
     def check(self) -> None:
-        if self.word_row[self.current_scheme.get("needs_revision", 0)] != 1.0 and self.needs_revision_only:
-            return
         print(f"Russian: {self.word_translation}")
-        for row in self.current_scheme.get("to_check"):
+        for row in self.current_scheme.to_check:
             CheckerManager(self.word_row, row).check()
 
 
+class StringConstants:
+    sheet_name_request = "What words do you want to learn?({})\n"
+    no_such_sheet_message = "No such sheet!"
+    sheet_name_second_request = "Please, choose one of those: {}. \n"
+    use_preset_request = "Use preset?(y/n)"
+    use_range_request = "Get only the words within a certain range?(y/n)"
+    words_status_request = "Which words do you want to learn?(a/n/r)"
+    congratulations_message = "Congratulations! You've done it!"
+    lets_fix_mistakes_message = "Now let's fix the mistakes."
+
+
 class Dictation:
-    sheets = ["nouns", "adjectives", "verbs", "other",
-              "numerals", "pronouns", "IrregularVerbsPresent",
-              "IrregularVerbsPast", ]
+    targets = {
+        "a": True,
+        "r": lambda x: x == "NEEDS_REVISION",
+        "n": lambda x: x == "NEW"
+    }
+    range_use: DictWithDefaultReturn = DictWithDefaultReturn(
+        {"n": lambda x: slice(x.shape[0])}, lambda x: slice(len(x))
+    )
+    settings_preset = {
+        "use_range": range_use.__getitem__("non-existent-key"),
+        "target": targets.get("n")
+    }
 
     def __init__(self) -> None:
-        self.word_type = input("What words do you want to learn?"
-                               f"({'/'.join(self.sheets)})\n")
-        while self.word_type not in self.sheets:
-            print("No such sheet!")
-            self.word_type = input(f"Please, choose one of those: {'/'.join(self.sheets)}. \n")
-        self.get_all = True if input("Get all words?(y/n)") == "y" else False
-        self.with_audio = True if input("Check pronunciation?(y/n)") == "y" else False
-        self.needs_revision_only = True if input("Only those that need revision?(y/n)") == "y" else False
-        self.words = self.prepare_words(self.word_type)
+        self.sheets_schemes = SheetsSchemes()
+        self.sheet_name = self.get_sheet_name()
+        self.sheet_scheme = self.sheets_schemes.get(self.sheet_name)
 
-    def prepare_words(self, word_type: str) -> numpy.array:
-        # words = pandas.read_excel(f"../germany/{word_type}.xlsx")
-        words = pandas.read_excel(PATH_TO_VOCABULARY, sheet_name=word_type)
+        self.all_words = self.get_all_words()
+        self.words_range, self.target_checker = self.get_dictation_settings()
+        self.requested_words = self.get_requested_words()
+
+    def get_sheet_name(self) -> str:
+        sheet_name = input(StringConstants.sheet_name_request.format(
+            {'/'.join(self.sheets_schemes.available_sheets)}))
+
+        while sheet_name not in self.sheets_schemes.available_sheets:
+            print(StringConstants.no_such_sheet_message)
+            sheet_name = input(StringConstants.sheet_name_second_request.format(
+                {'/'.join(self.sheets_schemes.available_sheets)}))
+
+        return sheet_name
+
+    def get_all_words(self):
+        words = pandas.read_excel(PATH_TO_VOCABULARY, sheet_name=self.sheet_name)
         words = numpy.array(words)
-        if not self.get_all:
-            words = words[int(input("Range of words starts at: "))-2:int(input("Range of words ends at: "))-1]
-        numpy.random.shuffle(words)
-        return words.tolist()
+        return words
+
+    def get_dictation_settings(self):
+        use_preset = True if input(StringConstants.use_preset_request) == "y" else False
+        if use_preset:
+            return self.settings_preset.values()
+        use_range = input(StringConstants.use_range_request)
+        target = input(StringConstants.words_status_request)
+        words_range = self.words_range.get(use_range)
+        check_target_function = self.targets.get(target, True)
+        return words_range, check_target_function
+
+    def get_requested_words(self) -> list[numpy.ndarray]:
+        return [i for i in self.all_words[self.words_range(self.all_words)]
+                if self.target_checker(i[self.sheet_scheme.status])]
 
     def start_dictation(self) -> None:
-        words = self.words
+        words = self.requested_words
         while words:
             words = []
-            for i in self.words:
+            for i in self.requested_words:
                 try:
-                    MainChecker(list(i), self.word_type, self.needs_revision_only).check()
+                    MainChecker(list(i), self.sheet_scheme).check()
                 except WordNotCompleted:
                     words.append(i)
             if words:
-                print("Now let's fix the mistakes.")
+                print(StringConstants.lets_fix_mistakes_message)
                 shuffle(words)
-            self.words = words
-        print("Congratulations! You've done it!")
+            self.requested_words = words
+        print(StringConstants.congratulations_message)
 
 
 Dictation().start_dictation()
