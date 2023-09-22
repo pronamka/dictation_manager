@@ -1,8 +1,31 @@
+from typing import Any, Iterable, Mapping, Union
 from abc import ABC, abstractmethod
+
+from ast import literal_eval
 
 
 class WordNotCompleted(Exception):
     ...
+
+
+class DictWithDefaultReturn(dict):
+    def __init__(self, data: Union[None, Iterable, Mapping], default_return: Any) -> None:
+        super(DictWithDefaultReturn, self).__init__(data)
+        self.default_return = default_return
+
+    def __missing__(self, key: Any) -> Any:
+        return self.default_return
+
+
+class SheetScheme:
+    def __init__(self,
+                 translation_index: int,
+                 status_index: int,
+                 to_check: list[dict[str, Union[str, int]]]
+                 ) -> None:
+        self.translation = translation_index
+        self.status = status_index
+        self.to_check = to_check
 
 
 class SheetsSchemes:
