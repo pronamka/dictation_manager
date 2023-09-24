@@ -42,7 +42,7 @@ class StringConstants:
     no_such_sheet_message = "No such sheet!"
     sheet_name_second_request = "Please, choose one of those: {}. \n"
     use_preset_request = "Use preset?(y/n)"
-    use_range_request = "Get only the words within a certain range?(y/n)"
+    use_range_request = "Get only the words within a certain range?((start, stop)/n)"
     words_status_request = "Which words do you want to learn?(a/n/r)"
     congratulations_message = "Congratulations! You've done it!"
     lets_fix_mistakes_message = "Now let's fix the mistakes."
@@ -50,15 +50,16 @@ class StringConstants:
 
 class Dictation:
     targets = {
-        "a": True,
+        "a": lambda x: True,
         "r": lambda x: x == "NEEDS_REVISION",
         "n": lambda x: x == "NEW"
     }
     range_use: DictWithDefaultReturn = DictWithDefaultReturn(
-        {"n": lambda x: slice(x.shape[0])}, lambda x: slice(len(x))
+        {"n": lambda words, rng: slice(words.shape[0])},
+        lambda words, rng: slice(*list(map(int, rng.split(" "))))
     )
     settings_preset = {
-        "use_range": range_use.__getitem__("non-existent-key"),
+        "use_range": range_use.__getitem__("n"),
         "target": targets.get("n")
     }
 
@@ -93,23 +94,31 @@ class Dictation:
             return self.settings_preset.values()
         use_range = input(StringConstants.use_range_request)
         target = input(StringConstants.words_status_request)
-        words_range = self.words_range.get(use_range)
-        check_target_function = self.targets.get(target, True)
+        words_range = self.range_use.__getitem__(use_range)(self.all_words, use_range)
+        check_target_function = self.targets.get(target)
         return words_range, check_target_function
 
-    def get_requested_words(self) -> list[numpy.ndarray]:
-        return [i for i in self.all_words[self.words_range(self.all_words)]
-                if self.target_checker(i[self.sheet_scheme.status])]
+    def get_requested_words(self) -> dict[int, numpy.ndarray]:
+        a = {}
+        c = self.words_range.start
+        for num, val in self.all_words[self.words_range]:
+            if self.target_checker(val[self.sheet_scheme.status]):
+                a[num+c] = val
+        a = list(a.items())
+        shuffle(a)
+        return dict(a)
 
     def start_dictation(self) -> None:
         words = self.requested_words
+        need_revision = set()
         while words:
             words = []
-            for i in self.requested_words:
+            for key, val in self.requested_words.items():
                 try:
-                    MainChecker(list(i), self.sheet_scheme).check()
+                    MainChecker(list(val), self.sheet_scheme).check()
                 except WordNotCompleted:
-                    words.append(i)
+                    words.append(val)
+                    need_revision.add(key)
             if words:
                 print(StringConstants.lets_fix_mistakes_message)
                 shuffle(words)
