@@ -55,4 +55,4 @@ class BaseChecker(ABC):
         """Check"""
 
 
-PATH_TO_VOCABULARY = "../vocabulary.xlsx"
+PATH_TO_VOCABULARY = "C:/Users/Yuriy/Desktop/dictation_manager/vocabulary.xlsx"
