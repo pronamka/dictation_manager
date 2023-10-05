@@ -1,3 +1,5 @@
+import shutil
+
 from typing import Literal, Iterable
 
 import win32com.client as win32
@@ -17,6 +19,7 @@ class ST:
 
 
 class ExcelModifier:
+    path_to_gen_py = "C:/Users/Yuriy/AppData/Local/Temp/gen_py"
 
     default_repetitions_amount = 2
 
@@ -32,9 +35,19 @@ class ExcelModifier:
     def __init__(self, worksheet_name: str, status_column_index: int) -> None:
         self.worksheet_name = worksheet_name
         self.status_column_index = status_column_index + 1
-        self.excel = win32.gencache.EnsureDispatch("Excel.Application")
+        self.excel = self.open_excel()
         self.workbook = self.excel.Workbooks.Open(PATH_TO_VOCABULARY)
         self.worksheet = self.workbook.Worksheets(self.worksheet_name)
+
+    def open_excel(self):
+        try:
+            return win32.gencache.EnsureDispatch("Excel.Application")
+        except AttributeError:
+            self.handle_excel_error()
+            return win32.gencache.EnsureDispatch("Excel.Application")
+
+    def handle_excel_error(self) -> None:
+        shutil.rmtree(self.path_to_gen_py)
 
     def modify(
             self,
