@@ -40,11 +40,12 @@ class ExcelModifier:
         self.worksheet = self.workbook.Worksheets(self.worksheet_name)
 
     def open_excel(self):
-        try:
-            return win32.gencache.EnsureDispatch("Excel.Application")
-        except AttributeError:
-            self.handle_excel_error()
-            return win32.gencache.EnsureDispatch("Excel.Application")
+        while True:
+            try:
+                return win32.gencache.EnsureDispatch("Excel.Application")
+            except AttributeError:
+                self.handle_excel_error()
+                continue
 
     def handle_excel_error(self) -> None:
         shutil.rmtree(self.path_to_gen_py)
