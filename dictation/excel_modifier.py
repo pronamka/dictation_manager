@@ -4,7 +4,7 @@ from typing import Literal, Iterable
 
 import win32com.client as win32
 
-from dictation.core import PATH_TO_VOCABULARY
+from dictation.core import PATH_TO_VOCABULARY, USERNAME
 
 
 class StringConstants:
@@ -19,7 +19,7 @@ class ST:
 
 
 class ExcelModifier:
-    path_to_gen_py = "C:/Users/Yuriy/AppData/Local/Temp/gen_py"
+    path_to_gen_py = f"C:/Users/{USERNAME}/AppData/Local/Temp/gen_py"
 
     default_repetitions_amount = 2
 
