@@ -1,3 +1,5 @@
+import os
+
 from typing import Any, Iterable, Mapping, Union
 from abc import ABC, abstractmethod
 
@@ -55,4 +57,6 @@ class BaseChecker(ABC):
         """Check"""
 
 
-PATH_TO_VOCABULARY = "C:/Users/Yuriy/Desktop/dictation_manager/vocabulary.xlsx"
+USERNAME = os.getcwd().split("\\")[2]
+VOCABULARY_RELATIVE_LOCATION = "../vocabulary.xlsx"
+PATH_TO_VOCABULARY = os.path.abspath(VOCABULARY_RELATIVE_LOCATION)
