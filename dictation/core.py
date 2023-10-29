@@ -6,6 +6,12 @@ from abc import ABC, abstractmethod
 from ast import literal_eval
 
 
+def process_range(rng: str) -> list[int, int]:
+    r = list(map(int, rng.split(" ")))
+    r[0] -= 1
+    return r
+
+
 class WordNotCompleted(Exception):
     ...
 
