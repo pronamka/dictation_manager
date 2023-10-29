@@ -1,11 +1,11 @@
 from random import shuffle
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Callable
 
 import pandas
 import numpy
 
 from core import SheetsSchemes, WordNotCompleted, PATH_TO_VOCABULARY, \
-    DictWithDefaultReturn, SheetScheme
+    DictWithDefaultReturn, SheetScheme, process_range
 
 from excel_modifier import ExcelModifier
 from spelling_checker import SpellChecker
@@ -52,12 +52,6 @@ class StringConstants:
     lets_fix_mistakes_message = "Now let's fix the mistakes."
 
 
-def process_range(rng: str) -> list[int, int]:
-    r = list(map(int, rng.split(" ")))
-    r[0] -= 1
-    return r
-
-
 class Dictation:
     targets = {
         "a": lambda x: True,
@@ -93,12 +87,12 @@ class Dictation:
 
         return sheet_name
 
-    def get_all_words(self):
+    def get_all_words(self) -> numpy.ndarray:
         words = pandas.read_excel(PATH_TO_VOCABULARY, sheet_name=self.sheet_name)
         words = numpy.array(words, dtype=str)
         return words
 
-    def get_dictation_settings(self):
+    def get_dictation_settings(self) -> tuple[slice, Callable]:
         use_preset = True if input(StringConstants.use_preset_request) == "y" else False
         if use_preset:
             words_range, target_checker = self.settings_preset.values()
@@ -111,7 +105,7 @@ class Dictation:
 
     def get_requested_words(self) -> dict[int, numpy.ndarray]:
         a = {}
-        c = s if (s:=self.words_range.start) else 0
+        c = s if (s := self.words_range.start) else 0
         for num, val in enumerate(self.all_words[self.words_range]):
             if self.target_checker(val[self.sheet_scheme.status].split("*")[0]):
                 a[num+c] = val
