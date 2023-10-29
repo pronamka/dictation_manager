@@ -1,5 +1,9 @@
 import sys
+from io import BytesIO
 from time import sleep
+
+from gtts import gTTS
+import pygame
 
 from core import BaseChecker, WordNotCompleted
 
@@ -46,5 +50,28 @@ class SpellChecker(BaseChecker):
                 continue
             else:
                 print(f"RIGHT! {self.transcription}\n")
+                Narrator.narrate(answer)
                 del words[answer_index]
                 words_plain = {key: val for key, val in words_plain.items() if val != answer_index}
+
+
+class Narrator:
+    sound_narrator = pygame
+    sound_narrator.init()
+    sound_narrator.mixer.init()
+    language = "de"
+
+    @classmethod
+    def narrate(cls, text_to_narrate: str) -> None:
+        text_to_speech = gTTS(text_to_narrate, lang=cls.language)
+        sound = BytesIO()
+        text_to_speech.write_to_fp(sound)
+        sound.seek(0)
+        cls._play_sound(sound)
+
+    @classmethod
+    def _play_sound(cls, audio: BytesIO):
+        cls.sound_narrator.mixer.music.load(audio)
+        cls.sound_narrator.mixer.music.play()
+        while cls.sound_narrator.mixer.music.get_busy():
+            continue
