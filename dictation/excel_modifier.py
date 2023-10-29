@@ -48,7 +48,10 @@ class ExcelModifier:
                 continue
 
     def handle_excel_error(self) -> None:
-        shutil.rmtree(self.path_to_gen_py)
+        try:
+            shutil.rmtree(self.path_to_gen_py)
+        except FileNotFoundError:
+            return
 
     def modify(
             self,
