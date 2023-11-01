@@ -73,5 +73,4 @@ class Narrator:
     def _play_sound(cls, audio: BytesIO):
         cls.sound_narrator.mixer.music.load(audio)
         cls.sound_narrator.mixer.music.play()
-        while cls.sound_narrator.mixer.music.get_busy():
-            continue
+
