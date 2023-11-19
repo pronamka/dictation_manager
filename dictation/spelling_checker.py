@@ -3,6 +3,7 @@ from io import BytesIO
 from time import sleep
 
 from gtts import gTTS
+from gtts.tts import gTTSError
 import pygame
 
 from core import BaseChecker, WordNotCompleted
@@ -60,9 +61,23 @@ class Narrator:
     sound_narrator.init()
     sound_narrator.mixer.init()
     language = "de"
+    connection_error = False
 
     @classmethod
     def narrate(cls, text_to_narrate: str) -> None:
+        try:
+            if cls.connection_error:
+                return
+            else:
+                cls.create_sound(text_to_narrate)
+        except gTTSError:
+            cls.connection_error = True
+            print("Couldn't narrate. Narrating turned off. \n"
+                  "Establish Internet connection and relaunch the dictation to turn on it back on.",
+                  file=sys.stderr)
+
+    @classmethod
+    def create_sound(cls, text_to_narrate: str) -> None:
         text_to_speech = gTTS(text_to_narrate, lang=cls.language)
         sound = BytesIO()
         text_to_speech.write_to_fp(sound)
