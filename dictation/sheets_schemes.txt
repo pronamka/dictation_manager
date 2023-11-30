@@ -1,4 +1,4 @@
-{"nouns": (5, 7, [
+{"nouns": ("nouns", 5, 7, [
                  {"comment_spelling": "Type singular noun with definite article",
                   "comment_pronunciation": "Pronounce singular noun without an article",
                   "spelling": 0,
@@ -9,7 +9,7 @@
                   "spelling": 2,
                   "pronunciation": 3}
                ]),
-"verbs": (9, 10, [
+"verbs": ("verbs", 9, 10, [
                     {"comment_spelling": "Type the verb in the infinitive form",
                       "spelling": 0,
                       "pronunciation": 1},
@@ -24,7 +24,7 @@
                       "pronunciation": 7},
 
     ]),
-"IrregularVerbsPresent": (10,11, [
+"IrregularVerbsPresent": ("IrregularVerbsPresent", 10,11, [
                                    {"comment_spelling": "Type the verb in the infinitive form",
                                     "spelling": 0,
                                     "pronunciation": 1},
@@ -41,7 +41,7 @@
                                     "spelling": 8,
                                     "pronunciation": 9},
     ]),
-"IrregularVerbsPast": (10, 11, [
+"IrregularVerbsPast": ("IrregularVerbsPast", 10, 11, [
                                    {"comment_spelling": "Type the verb in the infinitive form",
                                     "spelling": 0,
                                     "pronunciation": 1},
@@ -58,24 +58,24 @@
                                     "spelling": 8,
                                     "pronunciation": 9},
                                ]),
-"adjectives": (3, 4, [
+"adjectives": ("adjectives", 3, 4, [
                       {"comment_spelling": "Type the adjective: ",
                        "comment_pronunciation": "Pronounce the adjective: ",
                        "spelling": 0,
                        "pronunciation": 1}
                   ]),
-"other": (3, 4, [
+"other": ("other", 3, 4, [
                  {"comment_spelling": "Type the word(s): ",
                   "comment_pronunciation": "Pronounce the word(s): ",
                   "spelling": 0,
                   "pronunciation": 1}
              ]),
-"pronouns": (3, 4, [
+"pronouns": ("pronouns", 3, 4, [
                     {"comment_spelling": "Type the word: ",
                      "spelling": 0,
                      "pronunciation": 1}
                 ]),
-"VerbsPerfect": (5, 6, [
+"VerbsPerfect": ("VerbsPerfect", 5, 6, [
                     {"comment_spelling": "Type the verb in the infinitive: ",
                     "spelling": 0,
                     "pronunciation": 1},
