@@ -1,14 +1,11 @@
 from random import shuffle
-from typing import Iterable, Literal, Callable
+from typing import Iterable, Literal
 
-import pandas
-import numpy
-
-from core import SheetsSchemes, WordNotCompleted, PATH_TO_VOCABULARY, \
-    DictWithDefaultReturn, SheetScheme, process_range
+from core import WordNotCompleted, SheetScheme
 
 from excel_modifier import ExcelModifier
 from spelling_checker import SpellChecker
+from words_getter import GettersManager
 
 
 class CheckerManager:
@@ -42,82 +39,20 @@ class MainChecker:
 
 
 class StringConstants:
-    sheet_name_request = "What words do you want to learn?({})\n"
-    no_such_sheet_message = "No such sheet!"
-    sheet_name_second_request = "Please, choose one of those: {}. \n"
-    use_preset_request = "Use preset?(y/n)"
-    use_range_request = "Get only the words within a certain range?((start, stop)/n)"
-    words_status_request = "Which words do you want to learn?(a/n/r)"
     congratulations_message = "Congratulations! You've done it!"
     lets_fix_mistakes_message = "Now let's fix the mistakes."
 
 
 class Dictation:
-    targets = {
-        "a": lambda x: True,
-        "r": lambda x: x == "NEEDS_REVISION",
-        "n": lambda x: x == "NEW"
-    }
-    range_use: DictWithDefaultReturn = DictWithDefaultReturn(
-        {"n": lambda words, rng: slice(words.shape[0])},
-        lambda words, rng: slice(*process_range(rng))
-    )
-    settings_preset = {
-        "use_range": range_use.__getitem__("n"),
-        "target": targets.get("n")
-    }
-
-    def __init__(self) -> None:
-        self.sheets_schemes = SheetsSchemes()
-        self.sheet_name = self.get_sheet_name()
-        self.sheet_scheme = self.sheets_schemes.get(self.sheet_name)
-
-        self.all_words = self.get_all_words()
-        self.words_range, self.target_checker = self.get_dictation_settings()
-        self.requested_words = self.get_requested_words()
-
-    def get_sheet_name(self) -> str:
-        sheet_name = input(StringConstants.sheet_name_request.format(
-            {'/'.join(self.sheets_schemes.available_sheets)}))
-
-        while sheet_name not in self.sheets_schemes.available_sheets:
-            print(StringConstants.no_such_sheet_message)
-            sheet_name = input(StringConstants.sheet_name_second_request.format(
-                {'/'.join(self.sheets_schemes.available_sheets)}))
-
-        return sheet_name
-
-    def get_all_words(self) -> numpy.ndarray:
-        words = pandas.read_excel(PATH_TO_VOCABULARY, sheet_name=self.sheet_name)
-        words = numpy.array(words, dtype=str)
-        return words
-
-    def get_dictation_settings(self) -> tuple[slice, Callable]:
-        use_preset = True if input(StringConstants.use_preset_request) == "y" else False
-        if use_preset:
-            words_range, target_checker = self.settings_preset.values()
-            return words_range(self.all_words, ""), target_checker
-        use_range = input(StringConstants.use_range_request)
-        target = input(StringConstants.words_status_request)
-        words_range = self.range_use.__getitem__(use_range)(self.all_words, use_range)
-        check_target_function = self.targets.get(target, self.targets.get("a"))
-        return words_range, check_target_function
-
-    def get_requested_words(self) -> dict[int, numpy.ndarray]:
-        a = {}
-        c = s if (s := self.words_range.start) else 0
-        for num, val in enumerate(self.all_words[self.words_range]):
-            if self.target_checker(val[self.sheet_scheme.status].split("*")[0]):
-                a[num+c] = val
-        a = list(a.items())
-        shuffle(a)
-        return dict(a)
+    def __init__(self, sheet_scheme: SheetScheme, words: dict[int, str]):
+        self.requested_words = words
+        self.sheet_scheme = sheet_scheme
 
     def update_statuses(
             self,
             needed_updates: dict[Literal["NEEDS_REVISION", "NORMAL"], Iterable[int]]
     ) -> None:
-        excel = ExcelModifier(self.sheet_name, self.sheet_scheme.status)
+        excel = ExcelModifier(self.sheet_scheme.sheet_name, self.sheet_scheme.status)
         for new_status, row_indexes in needed_updates.items():
             excel.modify(new_status, row_indexes)
         excel.commit()
@@ -145,4 +80,6 @@ class Dictation:
         print(StringConstants.congratulations_message)
 
 
-Dictation().start_dictation()
+if __name__ == "__main__":
+    data = GettersManager().get_learning_data()
+    Dictation(*data).start_dictation()
