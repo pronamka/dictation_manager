@@ -82,5 +82,19 @@
                     {"comment_spelling": "Type the in Perfect Form with `haben` or `sein` \n in the Present Form of 3rd person singular: ",
                     "spelling": 2,
                     "pronunciation": 3},
-                    ]),
+                    ]),just"VerbsFull": ("VerbsFull", 9, 10, [
+                    {"comment_spelling": "Type the verb in the infinitive form",
+                      "spelling": 0,
+                      "pronunciation": 1},
+                    {"comment_spelling": "Type the verb in the present 3rd person singular form",
+                      "spelling": 2,
+                      "pronunciation": 3},
+                    {"comment_spelling": "Type the verb in the past 3rd person singular form",
+                      "spelling": 4,
+                      "pronunciation": 5},
+                    {"comment_spelling": "Type the verb in the present perfect 3rd person singular form",
+                      "spelling": 6,
+                      "pronunciation": 7},
+
+    ])
 }
