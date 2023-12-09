@@ -53,3 +53,21 @@ class InvalidSchemeError(Exception):
 
     def message(self) -> str:
         return self.error_message.format(sheet_name=self.sheet_name)
+
+
+class InvalidStatusError(Exception):
+    error_message = "An error occurred while processing the statuses in the status column of the sheet: `{sheet_name}`." \
+                    "Status column index was `{status_column_index}`; " \
+                    "Status that caused the error was `{status}` (on line `{line_index}`);" \
+                    "Check that the status name is allowed and that it has the index of power."
+
+    def __init__(self, sheet_name: str, status_column_index: int, status: str, error_line_index: int):
+        self.formatted_message = self.error_message.format(
+            sheet_name=sheet_name,
+            status_column_index=status_column_index,
+            status=status,
+            line_index=error_line_index
+        )
+
+    def message(self) -> str:
+        return self.formatted_message
