@@ -32,3 +32,13 @@ class SheetNotFoundError(Exception):
 
     def message(self) -> str:
         return self.error_message.format(sheet_name=self.sheet_name, file_path=self.file_path)
+
+
+class VocabularyFileNotFoundError(FileNotFoundError):
+    error_message = "File with vocabulary at the path: `{file_path}` was not found."
+
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def message(self) -> str:
+        return self.error_message.format(file_path=self.file_path)
