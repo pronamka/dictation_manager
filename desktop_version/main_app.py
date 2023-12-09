@@ -65,11 +65,15 @@ class Settings(dict):
             file.write(str(self))
 
     @property
-    def schemes_as_options(self):
+    def schemes(self) -> dict:
+        return self.get(self.schemes_key, {})
+
+    @property
+    def schemes_as_options(self) -> list[ft.dropdown.Option]:
         return [ft.dropdown.Option(i) for i in self.get(self.schemes_key, {}).keys()]
 
     @property
-    def path(self):
+    def path(self) -> str:
         return self.get(self.vocabulary_key, "")
 
     @property
