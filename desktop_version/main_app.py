@@ -14,7 +14,17 @@ class ExcelParser:
     @staticmethod
     def get_sheet(sheet_name: str) -> pd.DataFrame:
         if not SETTINGS.vocabulary_path_valid:
-            ...
+            raise VocabularyFileNotFoundError(SETTINGS.path)
+        file = pd.ExcelFile(SETTINGS.path)
+        sheets = file.sheet_names
+        if sheet_name not in sheets:
+            raise SheetNotFoundError(sheet_name, SETTINGS.path)
+        return file.parse(sheet_name=sheet_name)
+
+
+class StaticSettings:
+    available_statuses = ["NEW", "NORMAL", "NEEDS_REVISION", "DELAYED"]
+
 
         sheet = pd.read_excel(SETTINGS.path, sheet_name, dtype=str)
         return sheet
