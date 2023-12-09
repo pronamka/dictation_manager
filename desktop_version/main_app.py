@@ -144,10 +144,11 @@ class SchemeChoiceControls(ft.Column):
     no_schemes_message = "You do not have any schemes configured. Please go to schemes " \
                          "creation panel and create a scheme to proceed."
 
-    def __init__(self):
+    def __init__(self, scheme_chosen_function: Callable):
         self.schemes = SETTINGS.get(self.schemes_key)
         self.schemes_dropdown = ft.Dropdown(
-            options=[ft.dropdown.Option(i) for i in self.schemes.keys()]
+            options=[ft.dropdown.Option(i) for i in self.schemes.keys()],
+            on_change=lambda x: scheme_chosen_function(x.control.value)
         )
 
         self.no_schemes_label = ft.Text(color="red")
@@ -174,10 +175,10 @@ class SchemeChoiceControls(ft.Column):
 class DictationRunSettingsControls(ft.Column):
     target_states = ["NEW", "NORMAL", "NEEDS_REVISION", "all"]
 
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, start_dictation_function: Callable):
         self.range_label = ft.Text("Range: ")
-        self.range_start = ft.TextField(label="from", width=page.width//8)
-        self.range_end = ft.TextField(label="to", width=page.width//8)
+        self.range_start = ft.TextField(label="from", width=page.width//8, keyboard_type=ft.KeyboardType.NUMBER)
+        self.range_end = ft.TextField(label="to", width=page.width//8, keyboard_type=ft.KeyboardType.NUMBER)
 
         self.range_controls = ft.Row([self.range_label, self.range_start, self.range_end])
 
@@ -187,31 +188,59 @@ class DictationRunSettingsControls(ft.Column):
         self.with_narrator_checkbox = ft.Checkbox(label="With Narration?")
         self.with_narrator_checkbox.value = True
 
-        self.start_dictation_button = ft.ElevatedButton("Start Dictation")
+        self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=...)
         self.controls_list = [self.range_controls, self.target_choice,
                                     self.with_narrator_checkbox, self.start_dictation_button]
 
+        self.allowed_range: range = range(2, 2)
+        self.sheet = None
+
         super().__init__(self.controls_list)
+
+    def fill_controls(self, data: pd.ExcelFile):
+        self.sheet = data
+        self.allowed_range = range(2, data[0]+1+1)
+        self.range_start.value = 2
+        self.range_end.value = data[0]+1
+        self.disabled = False
+
+    def check_sheet_validity(self):
+        ...
+
+    def process_inputs(self) -> tuple[range, str, bool]:
+        input_range = range(int(self.range_start.value), int(self.range_end.value))
+        if input_range.start > input_range.stop or input_range.start < self.allowed_range.start or \
+                input_range.stop > self.allowed_range.stop:
+            ...
+        return input_range, self.target_choice.value, self.with_narrator_checkbox.value
 
 
 class DictationSettingsControls(ft.Column):
 
     def __init__(self, page: ft.Page):
         self.page = page
-
-        self.scheme_choice_controls = SchemeChoiceControls()
         self.no_vocabulary_path_set_label = ft.Text(color="red")
+
+        self.scheme_choice_controls = SchemeChoiceControls(self.fill_run_settings)
         if not SETTINGS.vocabulary_path_valid:
             self.scheme_choice_controls.disabled = True
             self.no_vocabulary_path_set_label.value = "You have no vocabulary file configured. \n" \
                                             "Please go to `File`."
 
-        self.dictation_run_settings_controls = DictationRunSettingsControls(page)
+        self.dictation_run_settings_controls = DictationRunSettingsControls(page, self.start_dictation)
         self.dictation_run_settings_controls.disabled = True
 
-        self.controls_list = [self.scheme_choice_controls, self.dictation_run_settings_controls]
+        self.controls_list = [self.no_vocabulary_path_set_label, self.scheme_choice_controls,
+                              self.dictation_run_settings_controls]
 
         super().__init__(self.controls_list)
+
+    def fill_run_settings(self, scheme_name: str):
+        scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
+        sheet_name = scheme.sheet_name
+        sheet = ExcelParser.get_sheet(sheet_name)
+        self.dictation_run_settings_controls.fill_controls(sheet)
+        self.page.update()
 
     def start_dictation(self):
         ...
