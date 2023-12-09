@@ -449,11 +449,11 @@ class SchemeCreationControls(ft.Column):
         columns_amount = sheet.shape[1]
         return columns_amount
 
-    @with_page_update
     def fill_sheet_choice_options(self):
         self.file, self.sheets = self.parse_excel(SETTINGS.path)
         self.sheet_choice.options = [ft.dropdown.Option(i) for i in self.sheets]
         self.sheet_choice.disabled = False
+        self.page.update()
 
     @staticmethod
     def parse_excel(path: str) -> tuple[pd.ExcelFile, list]:
