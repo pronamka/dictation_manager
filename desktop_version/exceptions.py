@@ -20,3 +20,15 @@ class InvalidIndexesError(Exception):
                 self.status_index == self.word_index:
             return self.error_messages[0]
         return self.error_messages[1]
+
+
+class SheetNotFoundError(Exception):
+    error_message = "The sheet name configured for that scheme is `{sheet_name}`, " \
+                    "but that sheet is not present in the file `{file_path}`."
+
+    def __init__(self, sheet_name: str, file_path: str) -> None:
+        self.sheet_name = sheet_name
+        self.file_path = file_path
+
+    def message(self) -> str:
+        return self.error_message.format(sheet_name=self.sheet_name, file_path=self.file_path)
