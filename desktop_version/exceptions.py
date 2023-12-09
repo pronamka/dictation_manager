@@ -42,3 +42,14 @@ class VocabularyFileNotFoundError(FileNotFoundError):
 
     def message(self) -> str:
         return self.error_message.format(file_path=self.file_path)
+
+
+class InvalidSchemeError(Exception):
+    error_message = "The selected scheme does not fit the sheet. Sheet name: `{sheet_name}`. \n" \
+                    "Please check that the sheet has all the columns specified in the scheme."
+
+    def __init__(self, sheet_name: str) -> None:
+        self.sheet_name = sheet_name
+
+    def message(self) -> str:
+        return self.error_message.format(sheet_name=self.sheet_name)
