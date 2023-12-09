@@ -7,6 +7,17 @@ import flet as ft
 import pandas as pd
 
 from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError
+from desktop_version.core import SheetScheme
+
+
+class ExcelParser:
+    @staticmethod
+    def get_sheet(sheet_name: str) -> pd.DataFrame:
+        if not SETTINGS.vocabulary_path_valid:
+            ...
+
+        sheet = pd.read_excel(SETTINGS.path, sheet_name, dtype=str)
+        return sheet
 
 
 class Block:
