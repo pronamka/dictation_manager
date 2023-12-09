@@ -26,23 +26,40 @@ class StaticSettings:
     available_statuses = ["NEW", "NORMAL", "NEEDS_REVISION", "DELAYED"]
 
 
-        sheet = pd.read_excel(SETTINGS.path, sheet_name, dtype=str)
-        return sheet
+class SheetToSchemeCompatibilityChecker:
+    def __init__(self, sheet: pd.DataFrame, scheme: SheetScheme):
+        self.sheet = sheet
+        self.scheme = scheme
 
+        self.columns_range = range(1, self.sheet.shape[0])
 
-class Block:
-    def __init__(self, block_representation: Union[ft.Row, ft.Column]):
-        self.block_representation = block_representation
+    def check_indexes(self):
+        translation_index, status_index = self.scheme.translation, self.scheme.status
+        self.check_indexes_in_range(translation_index, status_index)
 
-    def disable_controls(self):
-        self.block_representation.disabled = True
+        for i in self.scheme.to_check:
+            spelling_index, info_index = i.get("spelling", -1), i.get("info", -1)
+            self.check_indexes_in_range(spelling_index, info_index)
 
-    def enable_controls(self):
-        self.block_representation.disabled = False
+    def check_status_column(self):
+        status_index = self.scheme.status
+        column = self.sheet[:, status_index]
+        for num, content in enumerate(column):
+            self.process_status(content, num + 1)
 
-    @property
-    def as_block(self) -> Union[ft.Row, ft.Column]:
-        return self.block_representation
+    def process_status(self, status_string: str, line_index: int):
+        data_package = (self.scheme.sheet_name, self.scheme.status, status_string, line_index)
+        try:
+            status_name, status_power = status_string.split("*")
+        except ValueError:
+            raise InvalidStatusError(*data_package)
+        if status_name not in StaticSettings.available_statuses or (not (1 <= status_power <= 50)):
+            raise InvalidStatusError(*data_package)
+
+    def check_indexes_in_range(self, first_index: int, second_index: int) -> bool:
+        if first_index not in self.columns_range or second_index not in self.columns_range:
+            raise InvalidSchemeError(self.scheme.sheet_name)
+        return True
 
 
 class DictationControls(ft.Column):
