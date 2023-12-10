@@ -121,6 +121,41 @@ class SheetToSchemeCompatibilityChecker:
         return True
 
 
+class RowToCheck:
+    def __init__(self, content: np.ndarray, scheme: SheetScheme) -> None:
+        self.content = content
+        self.scheme = scheme
+
+        self.row = {
+            "translation": self.content[self.scheme.translation],
+            "status": self.content[self.scheme.status],
+            "to_check": [],
+        }
+
+        for i in self.scheme.to_check:
+            self.row["to_check"].append({
+                "spelling": content[i.get("spelling", 0)],
+                "info": content[i.get("info"), 0],
+                "instructions": content[i.get("comment"), 0]
+            })
+
+    @property
+    def translation(self) -> str:
+        return self.row.get("translation")
+
+    @property
+    def status(self) -> str:
+        return self.row.get("status")
+
+    @property
+    def to_check(self) -> list[dict[str, str]]:
+        return self.row.get("to_check")
+
+    @property
+    def content_row(self) -> dict[str, Union[str, list[dict[str, str]]]]:
+        return self.row
+
+
 class WordsGetter:
 
     # possible statuses of words. User can specify words with which status he wants to learn
