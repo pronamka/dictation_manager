@@ -207,9 +207,13 @@ class DictationRunSettingsControls(ft.Column):
     target_states = ["NEW", "NORMAL", "NEEDS_REVISION", "all"]
 
     def __init__(self, page: ft.Page, start_dictation_function: Callable):
+        self.start_dictation_function = start_dictation_function
+
+        self.sheet_processing_error_label = ft.Text(color="red")
+
         self.range_label = ft.Text("Range: ")
-        self.range_start = ft.TextField(label="from", width=page.width//8, keyboard_type=ft.KeyboardType.NUMBER)
-        self.range_end = ft.TextField(label="to", width=page.width//8, keyboard_type=ft.KeyboardType.NUMBER)
+        self.range_start = ft.TextField(label="from", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
+        self.range_end = ft.TextField(label="to", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
 
         self.range_controls = ft.Row([self.range_label, self.range_start, self.range_end])
 
@@ -219,30 +223,53 @@ class DictationRunSettingsControls(ft.Column):
         self.with_narrator_checkbox = ft.Checkbox(label="With Narration?")
         self.with_narrator_checkbox.value = True
 
-        self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=...)
-        self.controls_list = [self.range_controls, self.target_choice,
-                                    self.with_narrator_checkbox, self.start_dictation_button]
+        self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=self.send_dictation_settings)
+
+        self.error_with_chosen_settings_label = ft.Text(color="red")
+
+        self.controls_list = [self.sheet_processing_error_label, self.range_controls, self.target_choice,
+                              self.with_narrator_checkbox, self.start_dictation_button,
+                              self.error_with_chosen_settings_label]
 
         self.allowed_range: range = range(2, 2)
         self.sheet = None
 
         super().__init__(self.controls_list)
 
-    def fill_controls(self, data: pd.ExcelFile):
-        self.sheet = data
-        self.allowed_range = range(2, data[0]+1+1)
-        self.range_start.value = 2
-        self.range_end.value = data[0]+1
-        self.disabled = False
+    def send_dictation_settings(self, e):
+        try:
+            inputs = self.process_inputs()
+            self.start_dictation_function(*inputs)
+        except BaseExceptionWithUIMessage as e:
+            self.error_with_chosen_settings_label.value = e.message()
+            self.page.update()
 
-    def check_sheet_validity(self):
-        ...
+    def fill_controls(self, sheet: pd.DataFrame, scheme: SheetScheme) -> None:
+        sheet_valid = self.check_sheet_validity(sheet, scheme)
+        if not sheet_valid:
+            return
+        self.fill_range(sheet)
+        self.disabled = False
+        self.page.update()
+
+    def fill_range(self, sheet: pd.DataFrame):
+        self.range_start.value = 2
+        self.range_end.value = sheet.shape[0]
+
+    def check_sheet_validity(self, sheet: pd.DataFrame, scheme: SheetScheme) -> bool:
+        try:
+            SheetToSchemeCompatibilityChecker(sheet, scheme).check_compatibility()
+            return True
+        except BaseExceptionWithUIMessage as e:
+            self.sheet_processing_error_label.value = e.message()
+            self.disabled = True
+            return False
 
     def process_inputs(self) -> tuple[range, str, bool]:
-        input_range = range(int(self.range_start.value), int(self.range_end.value))
-        if input_range.start > input_range.stop or input_range.start < self.allowed_range.start or \
-                input_range.stop > self.allowed_range.stop:
-            ...
+        start, stop = int(self.range_start.value), int(self.range_end.value)
+        input_range = range(start, stop)
+        if start > stop or start < self.allowed_range.start or stop > self.allowed_range.stop:
+            raise InvalidRangeOfWordsError(start, stop)
         return input_range, self.target_choice.value, self.with_narrator_checkbox.value
 
 
