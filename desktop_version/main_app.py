@@ -97,7 +97,7 @@ class SchemeChoiceControls(ft.Column):
 
         self.no_schemes_label = ft.Text(color="red")
         self._check_for_schemes()
-        self.controls_list= [self.schemes_dropdown, self.no_schemes_label]
+        self.controls_list = [self.schemes_dropdown, self.no_schemes_label]
         super().__init__(self.controls_list)
 
     def _check_for_schemes(self) -> bool:
@@ -196,7 +196,7 @@ class DictationSettingsControls(ft.Column):
         if not SETTINGS.vocabulary_path_valid:
             self.scheme_choice_controls.disabled = True
             self.no_vocabulary_path_set_label.value = "You have no vocabulary file configured. \n" \
-                                            "Please go to `File`."
+                                                      "Please go to `File`."
 
         self.dictation_run_settings_controls = DictationRunSettingsControls(page, self.start_dictation)
         self.dictation_run_settings_controls.disabled = True
@@ -210,11 +210,11 @@ class DictationSettingsControls(ft.Column):
         scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
         sheet_name = scheme.sheet_name
         sheet = ExcelParser.get_sheet(sheet_name)
-        self.dictation_run_settings_controls.fill_controls(sheet)
+        self.dictation_run_settings_controls.fill_controls(sheet, scheme)
         self.page.update()
 
-    def start_dictation(self):
-        ...
+    def start_dictation(self, words_range: range, target: str, with_narration: bool):
+        print(words_range, target, with_narration)
 
 
 class Dictation(ft.Row):
@@ -238,7 +238,7 @@ class WordToCheckSchemeControls(ft.Column):
         self.word_to_check_column_index_input = ft.Dropdown()
         self.special_information_column_index_input = ft.Dropdown()
         self.controls_list = [self.instructions_input, self.word_to_check_column_index_input,
-                                    self.special_information_column_index_input]
+                              self.special_information_column_index_input]
         super().__init__(self.controls_list)
         self.disabled = True
 
@@ -258,7 +258,6 @@ class WordToCheckSchemeControls(ft.Column):
 
 
 def with_page_update(func: Callable) -> Callable:
-
     def wrapper(*args, **kwargs):
         res = func(args[0])
         args[0].page.update()
@@ -462,9 +461,9 @@ class SchemeManagingControls(ft.Row):
         print(SETTINGS.vocabulary_path_valid)
         if not SETTINGS.vocabulary_path_valid:
             self.no_vocabulary_file_label.value = "You have no vocabulary file configured. \n" \
-                                            "Please go to `File`."
+                                                  "Please go to `File`."
         self.controls_list = [self.navigation_bar, ft.Column([self.no_vocabulary_file_label,
-                                                         self.scheme_creation, self.scheme_deletion])]
+                                                              self.scheme_creation, self.scheme_deletion])]
         super().__init__(self.controls_list)
 
     def go_to(self, destination: str):
@@ -491,7 +490,7 @@ class MenuBar(ft.Row):
         self.scheme_creation_window_button = ft.ElevatedButton("Schemes", data="schemes")
         self.vocabulary_path_window_button = ft.ElevatedButton("File", data="file")
         self.controls_list = [self.dictation_window_button, self.scheme_creation_window_button,
-                    self.vocabulary_path_window_button]
+                              self.vocabulary_path_window_button]
 
         for i in self.controls_list:
             i.on_click = lambda x: navigation_function(x)
@@ -513,7 +512,7 @@ class MainPage:
         self.vocabulary_path_controls.visible = False
 
         self.navigation_routes = {"dictation": self.dictation, "schemes": self.schemes,
-                             "file": self.vocabulary_path_controls}
+                                  "file": self.vocabulary_path_controls}
 
         self.controls_list = ft.Column([self.page_menu, ft.Row([self.dictation, self.schemes,
                                                                 self.vocabulary_path_controls])])
