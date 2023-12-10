@@ -1,114 +1,14 @@
 import os
 
 from typing import Union, Callable
-from ast import literal_eval
 
 import flet as ft
 import pandas as pd
 
-from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError
-from desktop_version.core import SheetScheme
+from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError, BaseExceptionWithUIMessage, \
+    InvalidRangeOfWordsError
 
-
-class ExcelParser:
-    @staticmethod
-    def get_sheet(sheet_name: str) -> pd.DataFrame:
-        if not SETTINGS.vocabulary_path_valid:
-            raise VocabularyFileNotFoundError(SETTINGS.path)
-        file = pd.ExcelFile(SETTINGS.path)
-        sheets = file.sheet_names
-        if sheet_name not in sheets:
-            raise SheetNotFoundError(sheet_name, SETTINGS.path)
-        return file.parse(sheet_name=sheet_name)
-
-
-class StaticSettings:
-    available_statuses = ["NEW", "NORMAL", "NEEDS_REVISION", "DELAYED"]
-
-
-class SheetToSchemeCompatibilityChecker:
-    def __init__(self, sheet: pd.DataFrame, scheme: SheetScheme):
-        self.sheet = sheet
-        self.scheme = scheme
-
-        self.columns_range = range(1, self.sheet.shape[0])
-
-    def check_indexes(self):
-        translation_index, status_index = self.scheme.translation, self.scheme.status
-        self.check_indexes_in_range(translation_index, status_index)
-
-        for i in self.scheme.to_check:
-            spelling_index, info_index = i.get("spelling", -1), i.get("info", -1)
-            self.check_indexes_in_range(spelling_index, info_index)
-
-    def check_status_column(self):
-        status_index = self.scheme.status
-        column = self.sheet[:, status_index]
-        for num, content in enumerate(column):
-            self.process_status(content, num + 1)
-
-    def process_status(self, status_string: str, line_index: int):
-        data_package = (self.scheme.sheet_name, self.scheme.status, status_string, line_index)
-        try:
-            status_name, status_power = status_string.split("*")
-        except ValueError:
-            raise InvalidStatusError(*data_package)
-        if status_name not in StaticSettings.available_statuses or (not (1 <= status_power <= 50)):
-            raise InvalidStatusError(*data_package)
-
-    def check_indexes_in_range(self, first_index: int, second_index: int) -> bool:
-        if first_index not in self.columns_range or second_index not in self.columns_range:
-            raise InvalidSchemeError(self.scheme.sheet_name)
-        return True
-
-
-class DictationControls(ft.Column):
-    def __init__(self):
-
-        self.translation_label = ft.Text("Translation of the current word: ")
-        self.instructions_label = ft.Text("Type ...")
-        self.additional_information = ft.Text("Some additional information")
-
-        self.user_input = ft.TextField(on_submit=...)
-        self.input_information = ft.Text()
-        self.controls_list = [self.translation_label,self.instructions_label,self.additional_information,
-                         self.user_input,self.input_information]
-        super().__init__(self.controls_list)
-
-
-class Settings(dict):
-    settings_filename = "settings.txt"
-    vocabulary_key = "PATH_TO_VOCABULARY"
-    schemes_key = "schemes"
-
-    def __init__(self):
-        with open(self.settings_filename, mode="r") as file:
-            settings_dict = literal_eval(file.read())
-        super().__init__(settings_dict)
-
-    def change_settings(self, key, value) -> None:
-        self[key] = value
-        with open(self.settings_filename, mode="w") as file:
-            file.write(str(self))
-
-    @property
-    def schemes(self) -> dict:
-        return self.get(self.schemes_key, {})
-
-    @property
-    def schemes_as_options(self) -> list[ft.dropdown.Option]:
-        return [ft.dropdown.Option(i) for i in self.get(self.schemes_key, {}).keys()]
-
-    @property
-    def path(self) -> str:
-        return self.get(self.vocabulary_key, "")
-
-    @property
-    def vocabulary_path_valid(self) -> bool:
-        path = self.get(self.vocabulary_key, "")
-        if os.path.exists(path) and path.rsplit(".", maxsplit=1)[-1] == "xlsx":
-            return True
-        return False
+from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker
 
 
 class PathToVocabularyControls(ft.Column):
@@ -168,6 +68,19 @@ class PathToVocabularyControls(ft.Column):
     @property
     def vocabulary_path_valid(self) -> bool:
         return self.check_path_to_vocabulary(self.path_to_vocabulary)
+
+
+class DictationControls(ft.Column):
+    def __init__(self):
+        self.translation_label = ft.Text("Translation of the current word: ")
+        self.instructions_label = ft.Text("Type ...")
+        self.additional_information = ft.Text("Some additional information")
+
+        self.user_input = ft.TextField(on_submit=...)
+        self.input_information = ft.Text()
+        self.controls_list = [self.translation_label, self.instructions_label, self.additional_information,
+                              self.user_input, self.input_information]
+        super().__init__(self.controls_list)
 
 
 class SchemeChoiceControls(ft.Column):
@@ -635,7 +548,5 @@ def main(page: ft.Page):
     MainPage(page)
 
 
-SETTINGS = Settings()
-
-
-ft.app(target=main)
+if __name__ == "__main__":
+    ft.app(target=main)
