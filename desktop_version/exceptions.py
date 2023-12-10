@@ -83,3 +83,14 @@ class InvalidStatusError(BaseExceptionWithUIMessage):
 
     def message(self) -> str:
         return self.formatted_message
+
+
+class InvalidRangeOfWordsError(BaseExceptionWithUIMessage):
+    error_message = "The range you specified is invalid.\n" \
+                    "Your range must be a subrange of range [{start}, {end}] to be valid."
+
+    def __init__(self, start: int, end: int):
+        self.formatted_message = self.error_message.format(start=start, end=end)
+
+    def message(self) -> str:
+        return self.formatted_message
