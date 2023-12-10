@@ -1,7 +1,8 @@
 import os
 
-from typing import Union
+from typing import Union, Callable
 from ast import literal_eval
+from random import shuffle
 
 import numpy as np
 import pandas as pd
@@ -118,6 +119,43 @@ class SheetToSchemeCompatibilityChecker:
         if first_index not in self.columns_range or second_index not in self.columns_range:
             raise InvalidSchemeError(self.scheme.sheet_name)
         return True
+
+
+class WordsGetter:
+
+    # possible statuses of words. User can specify words with which status he wants to learn
+    targets = {
+        "all": lambda x: True,
+        "NEEDS_REVISION": lambda x: x == "NEEDS_REVISION",
+        "NEW": lambda x: x == "NEW",
+        "NORMAL": lambda x: x == "NORMAL"
+    }
+
+    def __init__(
+            self,
+            sheet: pd.DataFrame,
+            scheme: SheetScheme,
+            words_range: range,
+            target: str = "all",
+            with_shuffle: bool = True
+    ) -> None:
+        self.sheet: np.ndarray = np.array(sheet, dtype=str)
+        self.scheme: SheetScheme = scheme
+        self.words_range: slice = slice(words_range.start, words_range.stop)
+        self.target_checker: Callable = self.targets.get(target, lambda x: True)
+        self.with_shuffle: bool = with_shuffle
+
+    def get_words(self) -> dict[int, np.ndarray]:
+        """Filters words: leaves only those with the right status and in right range."""
+        a = {}
+        c = s if (s := self.words_range.start) else 0
+        for num, val in enumerate(self.sheet[self.words_range]):
+            if self.target_checker(val[self.scheme.status].split("*")[0]):
+                a[num + c] = val
+        a = list(a.items())
+        if self.with_shuffle:
+            shuffle(a)
+        return dict(a)
 
 
 SETTINGS = Settings()
