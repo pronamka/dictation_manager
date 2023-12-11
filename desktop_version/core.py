@@ -121,6 +121,25 @@ class SheetToSchemeCompatibilityChecker:
         return True
 
 
+class WordToCheck:
+    def __init__(self, word: str, instructions: str, info: str = ""):
+        self._word = word
+        self._instructions = instructions
+        self._info = info
+
+    @property
+    def word(self) -> str:
+        return self._word
+
+    @property
+    def instructions(self) -> str:
+        return self._instructions
+
+    @property
+    def info(self) -> str:
+        return self._info
+
+
 class RowToCheck:
     def __init__(self, content: np.ndarray, scheme: SheetScheme) -> None:
         self.content = content
@@ -133,11 +152,11 @@ class RowToCheck:
         }
 
         for i in self.scheme.to_check:
-            self.row["to_check"].append({
-                "spelling": content[i.get("spelling", 0)],
-                "info": content[i.get("info"), 0],
-                "instructions": content[i.get("comment"), 0]
-            })
+            self.row["to_check"].append(WordToCheck(
+                content[i.get("spelling", 0)],
+                content[i.get("comment"), 0],
+                content[i.get("info"), 0]
+            ))
 
     @property
     def translation(self) -> str:
@@ -148,11 +167,11 @@ class RowToCheck:
         return self.row.get("status")
 
     @property
-    def to_check(self) -> list[dict[str, str]]:
+    def to_check(self) -> list[WordToCheck]:
         return self.row.get("to_check")
 
     @property
-    def content_row(self) -> dict[str, Union[str, list[dict[str, str]]]]:
+    def content_row(self) -> dict[str, Union[str, list[WordToCheck]]]:
         return self.row
 
 
@@ -180,13 +199,13 @@ class WordsGetter:
         self.target_checker: Callable = self.targets.get(target, lambda x: True)
         self.with_shuffle: bool = with_shuffle
 
-    def get_words(self) -> dict[int, np.ndarray]:
+    def get_words(self) -> dict[int, RowToCheck]:
         """Filters words: leaves only those with the right status and in right range."""
         a = {}
         c = s if (s := self.words_range.start) else 0
         for num, val in enumerate(self.sheet[self.words_range]):
             if self.target_checker(val[self.scheme.status].split("*")[0]):
-                a[num + c] = val
+                a[num + c] = RowToCheck(val, self.scheme)
         a = list(a.items())
         if self.with_shuffle:
             shuffle(a)
