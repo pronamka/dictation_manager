@@ -77,17 +77,74 @@ class PathToVocabularyControls(ft.Column):
         return self.check_path_to_vocabulary(self.path_to_vocabulary)
 
 
-class DictationControls(ft.Column):
-    def __init__(self):
-        self.translation_label = ft.Text("Translation of the current word: ")
-        self.instructions_label = ft.Text("Type ...")
-        self.additional_information = ft.Text("Some additional information")
+class DictationRunControls(ft.Column):
+    translation_label_text = "Translation of the current word: {}"
+    answer_correctness_relations = {
+        AnswerCorrectness.CORRECT: ["Right", "green"],
+        AnswerCorrectness.INCORRECT: ["Wrong", "red"],
+        AnswerCorrectness.WITH_HINT: ["Answer Shown", "yellow"]
+    }
 
-        self.user_input = ft.TextField(on_submit=...)
-        self.input_information = ft.Text()
-        self.controls_list = [self.translation_label, self.instructions_label, self.additional_information,
-                              self.user_input, self.input_information]
+    def __init__(self):
+        self.previous_word_label = ft.Text()
+        self.additional_information_label = ft.Text()
+
+        self.translation_label = ft.Text()
+        self.instructions_label = ft.Text()
+
+        self.user_input = ft.TextField(on_submit=self.send_answer)
+
+        self.answer_correctness_indicator = ft.Text()
+
+        self.stop_dictation_button = ft.ElevatedButton("Stop Dictation")
+        self.show_answer_button = ft.ElevatedButton("Show answer")
+
+        self.controls_list = [self.previous_word_label, self.additional_information_label,
+                              self.translation_label, self.instructions_label, self.answer_correctness_indicator,
+                              self.user_input, self.show_answer_button, self.stop_dictation_button]
+
+        self.dictation = None
         super().__init__(self.controls_list)
+
+    def run_dictation(self, words: dict[int, RowToCheck]):
+        self.disabled = False
+        self.answer_correctness_indicator.value = ""
+        self.additional_information_label.value = ""
+        self.previous_word_label.value = ""
+
+        self.dictation = Dictation(words)
+        self.dictation.run()
+        self.display_current_word()
+
+    def display_current_word(self):
+        cur_word = self.dictation.get_word()
+        if not cur_word:
+            ...
+        cur_word: tuple[str, WordToCheck] = cur_word
+        self.translation_label.value = cur_word[0]
+        self.instructions_label.value = cur_word[1].instructions
+
+    def send_answer(self, e: ft.ControlEvent):
+        print("sadfsadf")
+        res = self.dictation.check_answer(self.user_input.value)
+        if not res:
+            self.display_correctness_indicator(AnswerCorrectness.INCORRECT)
+            self.page.update()
+            return
+        self.display_correctness_indicator(AnswerCorrectness.CORRECT)
+        self.display_previous_word(res)
+        self.user_input.clean()
+        self.display_current_word()
+        self.page.update()
+
+    def display_previous_word(self, word: WordToCheck):
+        self.previous_word_label.value = word.word
+        self.additional_information_label.value = word.info
+
+    def display_correctness_indicator(self, state: AnswerCorrectness):
+        scheme = self.answer_correctness_relations.get(state)
+        self.answer_correctness_indicator.value = scheme[0]
+        self.answer_correctness_indicator.color = scheme[1]
 
 
 class SchemeChoiceControls(ft.Column):
