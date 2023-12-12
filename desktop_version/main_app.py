@@ -360,7 +360,7 @@ class SchemeDeletionControls(ft.Column):
         super().__init__([ft.Row([self.schemes, self.delete_scheme_button]), self.error_label])
 
     def _fill_dropdown(self):
-        schemes = SETTINGS.schemes_as_options
+        schemes = schemes_as_options()
         if SETTINGS.vocabulary_path_valid:
             self.schemes.options = schemes
         if not schemes:
