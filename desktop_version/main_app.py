@@ -1,12 +1,17 @@
 import os
 
-from typing import Union, Callable
+from typing import Union, Callable, Generator
+from collections import deque
+from enum import Enum
 
 import flet as ft
 import pandas as pd
 
 from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError, BaseExceptionWithUIMessage, \
     InvalidRangeOfWordsError
+from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
+    WordsGetter, RowToCheck, WordToCheck, Dictation
+
 
 def schemes_as_options():
     return [ft.dropdown.Option(i) for i in SETTINGS.schemes]
