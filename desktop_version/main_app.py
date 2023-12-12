@@ -246,7 +246,7 @@ class DictationRunSettingsControls(ft.Column):
         start, stop = int(self.range_start.value), int(self.range_end.value)
         input_range = range(start, stop)
         if start > stop or start < self.allowed_range.start or stop > self.allowed_range.stop:
-            raise InvalidRangeOfWordsError(start, stop)
+            raise InvalidRangeOfWordsError(self.allowed_range.start, self.allowed_range.stop)
         return input_range, self.target_choice.value, self.with_narrator_checkbox.value
 
 
