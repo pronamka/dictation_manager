@@ -8,7 +8,14 @@ import pandas as pd
 from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError, BaseExceptionWithUIMessage, \
     InvalidRangeOfWordsError
 
-from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker
+def schemes_as_options():
+    return [ft.dropdown.Option(i) for i in SETTINGS.schemes]
+
+
+class AnswerCorrectness(Enum):
+    CORRECT = 1
+    INCORRECT = 2
+    WITH_HINT = 3
 
 
 class PathToVocabularyControls(ft.Column):
