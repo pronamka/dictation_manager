@@ -86,7 +86,7 @@ class SheetToSchemeCompatibilityChecker:
         self.sheet = np.array(sheet)
         self.scheme = scheme
 
-        self.columns_range = range(1, self.sheet.shape[0])
+        self.columns_range = range(0, self.sheet.shape[0])
 
     def check_compatibility(self) -> None:
         self.check_indexes()
@@ -102,7 +102,7 @@ class SheetToSchemeCompatibilityChecker:
 
     def check_status_column(self) -> None:
         status_index = self.scheme.status
-        column = self.sheet[:, status_index-1]
+        column = self.sheet[:, status_index]
         for num, content in enumerate(column):
             self.process_status(content, num + 1)
 
