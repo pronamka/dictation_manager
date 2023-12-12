@@ -252,8 +252,9 @@ class DictationRunSettingsControls(ft.Column):
 
 class DictationSettingsControls(ft.Column):
 
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, send_words_function: Callable):
         self.page = page
+        self.send_words_function = send_words_function
         self.no_vocabulary_path_set_label = ft.Text(color="red")
 
         self.scheme_choice_controls = SchemeChoiceControls(self.fill_run_settings)
@@ -268,18 +269,31 @@ class DictationSettingsControls(ft.Column):
         self.controls_list = [self.no_vocabulary_path_set_label, self.scheme_choice_controls,
                               self.dictation_run_settings_controls]
 
+        self.sheet, self.scheme = None, None
+
         super().__init__(self.controls_list)
 
     def fill_run_settings(self, scheme_name: str):
-        scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
-        sheet_name = scheme.sheet_name
-        sheet = ExcelParser.get_sheet(sheet_name)
-        self.dictation_run_settings_controls.fill_controls(sheet, scheme)
+        self.scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
+        sheet_name = self.scheme.sheet_name
+        self.sheet = ExcelParser.get_sheet(sheet_name)
+        self.dictation_run_settings_controls.fill_controls(self.sheet, self.scheme)
         self.page.update()
 
-    def start_dictation(self, words_range: range, target: str, with_narration: bool):
-        print(words_range, target, with_narration)
+    def start_dictation(
+            self,
+            words_range: range,
+            target: str,
+            with_narration: bool = True,
+            with_shuffle: bool = True
+    ):
+        if not self.scheme:
+            ...
+        words = WordsGetter(self.sheet, self.scheme, words_range, target, with_shuffle).get_words()
 
+        if not words:
+            ...
+        return self.send_words_function(words)
 
 
 class DictationControls(ft.Row):
