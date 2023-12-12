@@ -122,10 +122,15 @@ class SheetToSchemeCompatibilityChecker:
 
 
 class WordToCheck:
-    def __init__(self, word: str, instructions: str, info: str = ""):
+    def __init__(self, translation: str, word: str, instructions: str, info: str = ""):
+        self._translation = translation
         self._word = word
         self._instructions = instructions
         self._info = info
+
+    @property
+    def translation(self) -> str:
+        return self._translation
 
     @property
     def word(self) -> str:
