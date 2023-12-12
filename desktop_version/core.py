@@ -158,9 +158,10 @@ class RowToCheck:
 
         for i in self.scheme.to_check:
             self.row["to_check"].append(WordToCheck(
+                self.content[self.scheme.translation],
                 content[i.get("spelling", 0)],
-                content[i.get("comment"), 0],
-                content[i.get("info"), 0]
+                i.get("comment", ""),
+                content[i.get("info", 0)]
             ))
 
     @property
