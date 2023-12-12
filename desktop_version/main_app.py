@@ -217,14 +217,16 @@ class DictationSettingsControls(ft.Column):
         print(words_range, target, with_narration)
 
 
-class Dictation(ft.Row):
+
+class DictationControls(ft.Row):
     def __init__(self, reload: Callable, page: ft.Page):
         self.page = page
         self.reload = reload
 
-        self.dictation_settings = DictationSettingsControls(page)
+        self.dictation_settings = DictationSettingsControls(page, self.start_dictation)
         self.dictation_settings.width = self.page.width // 3
-        self.dictation = DictationControls()
+        self.dictation = DictationRunControls()
+        self.dictation.disabled = True
         self.dictation.width = self.page.width
 
         self.controls_list = [self.dictation_settings, self.dictation]
@@ -505,7 +507,7 @@ class MainPage:
 
         self.page_menu = MenuBar(self.window_changed)
 
-        self.dictation = Dictation(self.dictation_reload, self.page)
+        self.dictation = DictationControls(self.dictation_reload, self.page)
         self.schemes = SchemeManagingControls(self.scheme_managing_reload, self.page)
         self.vocabulary_path_controls = PathToVocabularyControls(self.vocabulary_path_reload)
         self.schemes.visible = False
