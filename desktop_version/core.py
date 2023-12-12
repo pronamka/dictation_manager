@@ -1,6 +1,7 @@
 import os
 
-from typing import Union, Callable
+from typing import Union, Callable, Generator
+from collections import deque
 from ast import literal_eval
 from random import shuffle
 
@@ -216,6 +217,80 @@ class WordsGetter:
         if self.with_shuffle:
             shuffle(a)
         return dict(a)
+
+
+class Dictation:
+    def __init__(self, words_to_check: dict[int, RowToCheck]) -> None:
+        self.words_to_check = words_to_check
+        self._dictation_running = False
+
+        self.revision_required = set()
+        self.completed_successfully = set()
+
+        self.live_queue = deque(words_to_check.items())
+
+        self.words_generator: Generator
+
+        self._current_row: RowToCheck
+        self._current_word: WordToCheck
+
+    def run(self):
+        self._dictation_running = True
+        self.update_words_generator()
+
+    def get_word(self) -> Union[tuple[str, WordToCheck], bool]:
+        try:
+            return self.get_word_data()
+        except StopIteration:
+            any_words_left = self.update_words_generator()
+            if not any_words_left:
+                return False
+            return self.get_word_data()
+
+    def get_word_data(self) -> tuple[str, WordToCheck]:
+        r = self.words_generator.__next__()
+        return self._current_row[1].translation, r
+
+    def update_words_generator(self) -> bool:
+        if self.live_queue:
+            current_row: [int, RowToCheck] = self.live_queue.popleft()
+            self.words_generator = self.give_row_item(*current_row)
+            return True
+        return False
+
+    def give_row_item(self, row_index: int, row: RowToCheck) -> Generator:
+        self._current_row = [row_index, row]
+        for i in row.to_check:
+            self._current_word = i
+            yield i
+
+    def stop(self):
+        """Here we should call a function to update word statuses"""
+        ...
+
+    def show_answer(self) -> WordToCheck:
+        """Here we should return the answer and information about it, put the presently
+        questioned word in the end of the queue and add it to self.revision_required"""
+        self.live_queue.append(self._current_row)
+        self.revision_required.add(self._current_row[0])
+        cur_word = self._current_word
+        self.update_words_generator()
+        return cur_word
+
+    def check_answer(self, answer: str) -> Union[WordToCheck, bool]:
+        is_right = self._current_word.word.strip().rstrip() == answer.strip().rstrip()
+        if not is_right:
+            return False
+        return self.count_as_right()
+
+    def count_as_right(self) -> WordToCheck:
+        """Here we add the word to self.completed_successfully"""
+        self.completed_successfully.add(self._current_row[0])
+        return self._current_word
+
+    @property
+    def is_running(self) -> bool:
+        return self._dictation_running
 
 
 SETTINGS = Settings()
