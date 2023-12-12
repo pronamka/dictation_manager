@@ -237,6 +237,7 @@ class DictationRunSettingsControls(ft.Column):
     def fill_range(self, sheet: pd.DataFrame):
         self.range_start.value = 2
         self.range_end.value = sheet.shape[0]
+        self.allowed_range = range(2, sheet.shape[0])
 
     def check_sheet_validity(self, sheet: pd.DataFrame, scheme: SheetScheme) -> bool:
         try:
@@ -315,6 +316,11 @@ class DictationControls(ft.Row):
         self.controls_list = [self.dictation_settings, self.dictation]
 
         super().__init__(self.controls_list)
+
+    def start_dictation(self, words: dict[int, RowToCheck]):
+        self.dictation_settings.disabled = True
+        self.dictation.run_dictation(words)
+        self.page.update()
 
 
 class WordToCheckSchemeControls(ft.Column):
