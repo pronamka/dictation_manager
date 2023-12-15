@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
-    InvalidSchemeError
+    InvalidSchemeError, NoWordsMatchingSettings
 
 
 class Settings(dict):
@@ -206,6 +206,8 @@ class WordsGetter:
         self.target_checker: Callable = self.targets.get(target, lambda x: True)
         self.with_shuffle: bool = with_shuffle
 
+        self.target = target
+
     def get_words(self) -> dict[int, RowToCheck]:
         """Filters words: leaves only those with the right status and in right range."""
         a = {}
@@ -216,6 +218,8 @@ class WordsGetter:
         a = list(a.items())
         if self.with_shuffle:
             shuffle(a)
+        if not a:
+            raise NoWordsMatchingSettings(self.target, self.words_range.start, self.words_range.stop)
         return dict(a)
 
 
