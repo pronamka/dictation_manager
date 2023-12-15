@@ -94,3 +94,15 @@ class InvalidRangeOfWordsError(BaseExceptionWithUIMessage):
 
     def message(self) -> str:
         return self.formatted_message
+
+
+class NoWordsMatchingSettings(BaseExceptionWithUIMessage):
+    error_message = "There were no words matching the specified settings. \n" \
+                    "(No words with status {status} in range [{range_start}, {range_stop}])"
+
+    def __init__(self, status: str, range_start: int, range_stop: int) -> None:
+        self.formatted_message = self.error_message.format(status=status, range_start=range_start,
+                                                           range_stop=range_stop)
+
+    def message(self) -> str:
+        return self.formatted_message
