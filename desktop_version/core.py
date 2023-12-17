@@ -292,8 +292,24 @@ class WordsGetter:
         if self.with_shuffle:
             shuffle(a)
         if not a:
-            raise NoWordsMatchingSettings(self.target, self.words_range.start, self.words_range.stop)
-        return dict(a)
+            raise NoWordsMatchingSettings(self.target, self.words_range.start+2, self.words_range.stop+1)
+        return DictationContent(dict(a), self.scheme)
+
+
+class AnswerCheckedResponse:
+    def __init__(
+            self,
+            is_right: bool,
+            with_synonyms: str,
+            synonyms_left: str,
+            info_to_given_word: str,
+            other_variations: str
+    ):
+        self.is_right: bool = is_right
+        self.with_synonyms: str = with_synonyms
+        self.synonyms_left: str = synonyms_left
+        self.info_to_given_word: str = info_to_given_word
+        self.other_variations: str = other_variations
 
 
 class Dictation:
