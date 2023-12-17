@@ -165,25 +165,58 @@ class Choice:
 
     def __init__(self, translation: str, words_string: str, instructions: str, additional_info_string: str):
         self._translation = translation
-        self._word = word
         self._instructions = instructions
-        self._info = info
+
+        self.synonyms = words_string.strip().rstrip().split("|")
+        self.amount_of_synonyms = len(self.synonyms)
+
+        self.has_synonyms = True if self.amount_of_synonyms > 1 else False
+
+        self.additional_info = additional_info_string.strip().rstrip().split("|")
+        l = len(self.synonyms) - len(self.additional_info)
+        l = 0 if l < 0 else l
+        self.additional_info += [""] * l
+
+        self.with_synonyms = ""
+        if self.amount_of_synonyms > 1:
+            self.with_synonyms = self.has_synonyms_message.format(self.amount_of_synonyms)
+
+        self.words = [WordToCheck(w, i) for w, i in zip(self.synonyms, self.additional_info)]
+
+    def check_answer(self, answer: str, affect_words: bool = True) -> tuple[bool, str, str]:
+        for index, word in enumerate(self.words):
+            result = word.check_answer(answer)
+            if result[0] and affect_words:
+                self.words.pop(index)
+            if result[0]:
+                return result
+        else:
+            return False, "", ""
+
+    def show_all_translation(self) -> str:
+        translations = ""
+        for i in self.words:
+            translations += i.return_as_options() + ";"
+        return translations
 
     @property
     def translation(self) -> str:
         return self._translation
 
     @property
-    def word(self) -> str:
-        return self._word
-
-    @property
     def instructions(self) -> str:
         return self._instructions
 
     @property
-    def info(self) -> str:
-        return self._info
+    def all_words_checked(self) -> bool:
+        return True if len(self.words) <= 0 else False
+
+    @property
+    def amount_of_words_left(self) -> str:
+        l = len(self.words)
+        if l:
+            return self.synonyms_left_message.format(len(self.words))
+        return "You have given all the translations for the previous word."
 
 
 class RowToCheck:
