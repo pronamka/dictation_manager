@@ -123,7 +123,47 @@ class SheetToSchemeCompatibilityChecker:
 
 
 class WordToCheck:
-    def __init__(self, translation: str, word: str, instructions: str, info: str = ""):
+
+    def __init__(self, word: str, info: str = ""):
+        self.word_variations = word.split("/")
+        self.info_variations = info.split("/")
+        """max_length = max(len(self.word_variations), len(self.info_variations))
+        self.word_variations += [""] * (max_length - len(self.word_variations))
+        self.info_variations += [""] * (max_length - len(self.info_variations))
+        
+        self.pairs = [(w, i) for w, i in zip(self.word_variations, self.info_variations)]"""
+        l = len(self.word_variations) - len(self.info_variations)
+        l = 0 if l < 0 else l
+        self.info_variations += [""] * l
+        self.pairs = {w: i for w, i in zip(self.word_variations, self.info_variations)}
+
+    def check_answer(self, answer: str) -> tuple[bool, str, str]:
+        info = self.pairs.get(answer, False)
+        return (False, "", "") if info is False else (True, info, self.give_other_variations(answer))
+
+    def give_other_variations(self, answer: str) -> str:
+        s = f"Right, the word was: {answer}."
+        if len(self.pairs) > 1:
+            s += "Other variations you could have given: "
+        for k, i in self.pairs.items():
+            if k == answer:
+                continue
+            s += k + f"({i}), "
+        return s.removesuffix(", ") + "."
+
+    def return_as_options(self) -> str:
+        s = ""
+        for k, i in self.pairs.items():
+            s += k + f"({i})/"
+        return s.removesuffix("/")
+
+
+class Choice:
+    has_synonyms_message = "This word can be translated in {} different ways. You must provide all of them. \n" \
+                            "(The order in which you give answer does not matter.)"
+    synonyms_left_message = "You still have to provide {} possible translations."
+
+    def __init__(self, translation: str, words_string: str, instructions: str, additional_info_string: str):
         self._translation = translation
         self._word = word
         self._instructions = instructions
