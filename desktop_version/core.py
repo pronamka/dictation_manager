@@ -4,12 +4,14 @@ from typing import Union, Callable, Generator
 from collections import deque
 from ast import literal_eval
 from random import shuffle
+import pywintypes
 
 import numpy as np
 import pandas as pd
 
 from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
-    InvalidSchemeError, NoWordsMatchingSettings
+    InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError
+from desktop_version.excel_modifier import ExcelModifier
 
 
 class Settings(dict):
@@ -231,7 +233,7 @@ class RowToCheck:
         }
 
         for i in self.scheme.to_check:
-            self.row["to_check"].append(WordToCheck(
+            self.row["to_check"].append(Choice(
                 self.content[self.scheme.translation],
                 content[i.get("spelling", 0)],
                 i.get("comment", ""),
@@ -247,12 +249,18 @@ class RowToCheck:
         return self.row.get("status")
 
     @property
-    def to_check(self) -> list[WordToCheck]:
+    def to_check(self) -> list[Choice]:
         return self.row.get("to_check")
 
     @property
-    def content_row(self) -> dict[str, Union[str, list[WordToCheck]]]:
+    def content_row(self) -> dict[str, Union[str, list[Choice]]]:
         return self.row
+
+
+class DictationContent:
+    def __init__(self, words: dict[int, RowToCheck], scheme: SheetScheme):
+        self.words = words
+        self.scheme = scheme
 
 
 class WordsGetter:
@@ -275,13 +283,13 @@ class WordsGetter:
     ) -> None:
         self.sheet: np.ndarray = np.array(sheet, dtype=str)
         self.scheme: SheetScheme = scheme
-        self.words_range: slice = slice(words_range.start, words_range.stop)
+        self.words_range: slice = slice(words_range.start-2, words_range.stop-1)
         self.target_checker: Callable = self.targets.get(target, lambda x: True)
         self.with_shuffle: bool = with_shuffle
 
         self.target = target
 
-    def get_words(self) -> dict[int, RowToCheck]:
+    def get_words(self) -> DictationContent:
         """Filters words: leaves only those with the right status and in right range."""
         a = {}
         c = s if (s := self.words_range.start) else 0
@@ -313,14 +321,20 @@ class AnswerCheckedResponse:
 
 
 class Dictation:
-    def __init__(self, words_to_check: dict[int, RowToCheck]) -> None:
-        self.words_to_check = words_to_check
+    def __init__(
+            self,
+            dictation_content: DictationContent,
+            path_to_vocabulary: str,
+    ) -> None:
+        self.path_to_vocabulary = path_to_vocabulary
+        self.scheme = dictation_content.scheme
+        self.words_to_check = dictation_content.words
         self._dictation_running = False
 
         self.revision_required = set()
         self.completed_successfully = set()
 
-        self.live_queue = deque(words_to_check.items())
+        self.live_queue = deque(self.words_to_check.items())
 
         self.words_generator: Generator
 
@@ -331,18 +345,18 @@ class Dictation:
         self._dictation_running = True
         self.update_words_generator()
 
-    def get_word(self) -> Union[tuple[str, WordToCheck], bool]:
+    def get_word(self) -> Union[bool, Choice]:
         try:
             return self.get_word_data()
         except StopIteration:
             any_words_left = self.update_words_generator()
             if not any_words_left:
+                self.stop()
                 return False
             return self.get_word_data()
 
-    def get_word_data(self) -> tuple[str, WordToCheck]:
-        r = self.words_generator.__next__()
-        return self._current_row[1].translation, r
+    def get_word_data(self) -> Choice:
+        return self.words_generator.__next__()
 
     def update_words_generator(self) -> bool:
         if self.live_queue:
@@ -354,14 +368,30 @@ class Dictation:
     def give_row_item(self, row_index: int, row: RowToCheck) -> Generator:
         self._current_row = [row_index, row]
         for i in row.to_check:
-            self._current_word = i
-            yield i
+            self._current_word: Choice = i
+            while not self._current_word.all_words_checked:
+                yield self._current_word
+
+    def update_statuses(self):
+        self.completed_successfully = self.completed_successfully.difference(self.revision_required)
+        to_update = {"NEEDS_REVISION": self.revision_required, "NORMAL": self.completed_successfully}
+
+        excel = ExcelModifier(self.scheme.sheet_name, self.scheme.status, self.path_to_vocabulary)
+        for new_status, row_indexes in to_update.items():
+            excel.modify(new_status, row_indexes)
+        excel.commit()
 
     def stop(self):
         """Here we should call a function to update word statuses"""
-        ...
+        if not self._dictation_running:
+            return
+        try:
+            self.update_statuses()
+        except pywintypes.com_error:
+            raise ExcelAppOpenedError()
+        self._dictation_running = False
 
-    def show_answer(self) -> WordToCheck:
+    def show_answer(self) -> Choice:
         """Here we should return the answer and information about it, put the presently
         questioned word in the end of the queue and add it to self.revision_required"""
         self.live_queue.append(self._current_row)
@@ -370,16 +400,18 @@ class Dictation:
         self.update_words_generator()
         return cur_word
 
-    def check_answer(self, answer: str) -> Union[WordToCheck, bool]:
-        is_right = self._current_word.word.strip().rstrip() == answer.strip().rstrip()
-        if not is_right:
-            return False
-        return self.count_as_right()
+    def check_answer(self, answer: str, affect_choice: bool = True) -> AnswerCheckedResponse:
+        is_right = self._current_word.check_answer(answer, affect_choice)
+        response_data = AnswerCheckedResponse(is_right[0], self._current_word.with_synonyms,
+                                              self._current_word.amount_of_words_left,
+                                              is_right[1], is_right[2])
+        if is_right[0] and self._current_word.all_words_checked:
+            self.count_as_right()
+        return response_data
 
-    def count_as_right(self) -> WordToCheck:
+    def count_as_right(self) -> None:
         """Here we add the word to self.completed_successfully"""
         self.completed_successfully.add(self._current_row[0])
-        return self._current_word
 
     @property
     def is_running(self) -> bool:
