@@ -106,3 +106,11 @@ class NoWordsMatchingSettings(BaseExceptionWithUIMessage):
 
     def message(self) -> str:
         return self.formatted_message
+
+
+class ExcelAppOpenedError(BaseExceptionWithUIMessage):
+    error_message = "We can't save your results when your Excel app is opened. \n" \
+                    "Please close it and press `Stop Dictation`."
+
+    def message(self) -> str:
+        return self.error_message
