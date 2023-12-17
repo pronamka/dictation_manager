@@ -1,6 +1,7 @@
 from time import sleep
 
 from typing import Literal, Iterable
+import pythoncom
 
 import win32com.client as win32
 
@@ -17,7 +18,7 @@ class ST:
 
 
 class ExcelModifier:
-    #path_to_gen_py = f"C:/Users/{USERNAME}/AppData/Local/Temp/gen_py"
+    # path_to_gen_py = f"C:/Users/{USERNAME}/AppData/Local/Temp/gen_py"
 
     default_repetitions_amount = 2
 
@@ -34,6 +35,7 @@ class ExcelModifier:
         self.worksheet_name = worksheet_name
         self.status_column_index = status_column_index + 1
         self.excel = self.open_excel()
+        self.excel.Visible = False
         self.workbook = self.excel.Workbooks.Open(path_to_vocabulary)
         self.worksheet = self.workbook.Worksheets(self.worksheet_name)
 
@@ -41,10 +43,12 @@ class ExcelModifier:
     def open_excel():
         for i in range(10):
             try:
-                return win32.gencache.EnsureDispatch("Excel.Application")
+                pythoncom.CoInitialize()
+                return win32.Dispatch("Excel.Application")
             except AttributeError:
                 sleep(1)
                 continue
+        raise Exception
 
     """def handle_excel_error(self) -> None:
         try:
