@@ -151,7 +151,7 @@ class WordToCheck:
             if k == answer:
                 continue
             s += k + f"({i}), "
-        return s.removesuffix(", ") + "."
+        return s.removesuffix(", ")
 
     def return_as_options(self) -> str:
         s = ""
@@ -162,8 +162,8 @@ class WordToCheck:
 
 class Choice:
     has_synonyms_message = "This word can be translated in {} different ways. You must provide all of them. \n" \
-                            "(The order in which you give answer does not matter.)"
-    synonyms_left_message = "You still have to provide {} possible translations."
+                            "(The order in which you give answers does not matter)"
+    synonyms_left_message = "You still have to provide {} possible translation(s)."
 
     def __init__(self, translation: str, words_string: str, instructions: str, additional_info_string: str):
         self._translation = translation
