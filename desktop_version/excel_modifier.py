@@ -1,5 +1,3 @@
-from time import sleep
-
 from typing import Literal, Iterable
 import pythoncom
 
@@ -41,20 +39,23 @@ class ExcelModifier:
 
     @staticmethod
     def open_excel():
-        for i in range(10):
-            try:
-                pythoncom.CoInitialize()
-                return win32.Dispatch("Excel.Application")
-            except AttributeError:
-                sleep(1)
-                continue
-        raise Exception
-
-    """def handle_excel_error(self) -> None:
+        pythoncom.CoInitialize()
         try:
-            shutil.rmtree(self.path_to_gen_py)
-        except FileNotFoundError:
-            return"""
+            app = win32.gencache.EnsureDispatch("Excel.Application")
+        except AttributeError:
+            import os
+            import re
+            import sys
+            import shutil
+            # Remove cache and try again.
+            MODULE_LIST = [m.__name__ for m in sys.modules.values()]
+            for module in MODULE_LIST:
+                if re.match(r'win32com\.gen_py\..+', module):
+                    del sys.modules[module]
+            shutil.rmtree(os.path.join(os.environ.get('LOCALAPPDATA'), 'Temp', 'gen_py'))
+            from win32com import client
+            app = client.gencache.EnsureDispatch("Excel.Application")
+        return app
 
     def modify(
             self,
