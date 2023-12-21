@@ -22,14 +22,26 @@ def schemes_as_options():
 
 
 class WordToCheckSchemeControls(ft.Column):
-    def __init__(self):
-        self._instructions_input = ft.TextField(label="instructions for the input")
-        self._word_to_check_column_index_input = ft.Dropdown()
-        self._special_information_column_index_input = ft.Dropdown()
+    def __init__(self, width: int = 300):
+        self._instructions_input = ft.TextField(
+            label="Instructions for checking",
+            hint_text="Give instructions, so you know how to answer.",
+            multiline=True,
+            min_lines=1
+        )
+        self._word_to_check_column_index_input = ft.Dropdown(
+            label="Column To Check",
+            hint_text="Which column contains the value you want to check?"
+        )
+        self._special_information_column_index_input = ft.Dropdown(
+            label="Column with Additional Information",
+            hint_text="Which column contains the additional information about the word checked?"
+        )
         self._controls_list = [self._instructions_input, self._word_to_check_column_index_input,
                                self._special_information_column_index_input]
         super().__init__(self._controls_list)
         self.disabled = True
+        self.width = width
 
     def add_options(self, options: list[ft.dropdown.Option]):
         self._word_to_check_column_index_input.options = deepcopy(options)
@@ -103,38 +115,93 @@ class SchemeDeletionControls(ft.Column):
 class SchemeCreationControls(ft.Column):
     _scheme_created_message_template = "Scheme `{}` was successfully created."
 
-    def __init__(self):
+    def __init__(self, overall_width: int = 600):
+        self.overall_width = overall_width
+        self._file, self._sheets = None, None
+
         self._title = ft.Text(value="Scheme Creation", style=ft.TextThemeStyle.TITLE_LARGE)
+
+        self._general_scheme_settings_title = ft.Text(
+            value="General Parameters of the Scheme",
+            style=ft.TextThemeStyle.TITLE_MEDIUM
+        )
 
         self._sheet_choice = ft.Dropdown(
             on_change=self._fill_dropdowns,
-
+            autofocus=True,
+            label="Excel Sheet",
+            hint_text="What sheet are you creating the scheme for?"
         )
         self._sheet_choice.disabled = True
 
-        self._file, self._sheets = None, None
+        self._scheme_name = ft.TextField(
+            label="Name of your scheme",
+            hint_text="How would you like to name your scheme?"
+        )
 
-        self._scheme_name = ft.TextField(label="name of the scheme")
+        self._translation_column_index_input = ft.Dropdown(
+            label="Translation Column",
+            hint_text="Which column contains the translation of the word?"
+        )
+        self._word_status_column_index_input = ft.Dropdown(
+            label="Status Column",
+            hint_text="Which column contains the status of the word?"
+        )
 
-        self._translation_column_index_input = ft.Dropdown()
-        self._word_status_column_index_input = ft.Dropdown()
+        self._empty_separator = ft.Container(height=30)
 
-        self._test_blocks = [WordToCheckSchemeControls()]
+        self._test_blocks_managing_title = ft.Text(
+            "Test Blocks",
+            style=ft.TextThemeStyle.TITLE_MEDIUM
+        )
+
+        self._test_blocks = [WordToCheckSchemeControls(overall_width//4)]
         self._test_blocks_column = ft.Column([i for i in self._test_blocks])
 
         self._errors_label = ft.Text(color="red")
         self._scheme_created_label = ft.Text(color="green")
 
-        self._add_test_block_button = ft.ElevatedButton("Add a test block", on_click=self._add_test_block)
-        self._remove_test_block_button = ft.ElevatedButton("Remove the last test block",
-                                                           on_click=self._remove_test_block)
+        self._add_test_block_button = ft.ElevatedButton(
+            "Add a test block",
+            on_click=self._add_test_block,
+            width=200,
+        )
+        self._remove_test_block_button = ft.ElevatedButton(
+            text="Remove last test block",
+            on_click=self._remove_test_block,
+            width=200,
+        )
 
-        self._create_scheme_button = ft.ElevatedButton("Create Scheme", on_click=self._create_scheme)
+        self._test_blocks_managing_buttons = ft.Column(
+            controls=[self._add_test_block_button, self._remove_test_block_button],
+            width=overall_width//5,
+        )
+        self._test_blocks_row = ft.Row(
+            controls=self._test_blocks,
+            wrap=True,
+            spacing=10,
+            run_spacing=10,
+        )
 
-        controls = [self._title, self._sheet_choice, self._scheme_name,
+        self._test_blocks_managing = ft.Row(
+            controls=[self._test_blocks_managing_buttons, self._test_blocks_row],
+            disabled=True,
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+
+        self._create_scheme_button = ft.ElevatedButton(
+            "Create Scheme",
+            on_click=self._create_scheme,
+            disabled=True
+        )
+
+        controls = [self._title, self._general_scheme_settings_title,
+                    self._sheet_choice, self._scheme_name,
                     self._translation_column_index_input, self._word_status_column_index_input,
-                    self._test_blocks_column, self._errors_label,
-                    self._add_test_block_button, self._remove_test_block_button, self._create_scheme_button,
+                    self._empty_separator,
+                    self._test_blocks_managing_title,
+                    self._test_blocks_managing, self._errors_label,
+                    self._create_scheme_button,
                     self._scheme_created_label]
 
         self._inputs = [self._sheet_choice, self._scheme_name,
@@ -144,6 +211,11 @@ class SchemeCreationControls(ft.Column):
 
         if SETTINGS.vocabulary_path_valid:
             self._fill_sheet_choice_options()
+        self.alignment = ft.MainAxisAlignment.CENTER
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        for i in self._inputs:
+            i.width = overall_width//2
+        self._test_blocks_managing.width = overall_width - 20
 
     def reload(self):
         if SETTINGS.vocabulary_path_valid:
@@ -155,9 +227,12 @@ class SchemeCreationControls(ft.Column):
         self._translation_column_index_input.options.clear()
         self._word_status_column_index_input.options.clear()
 
+        self._test_blocks_managing.disabled = True
+        self._create_scheme_button.disabled = True
+
         self._test_blocks.clear()
         self._test_blocks.append(WordToCheckSchemeControls())
-        self._update_test_block_column()
+        self._update_test_block_row()
 
         self._errors_label.value = ""
         self._scheme_created_label = ""
@@ -215,7 +290,7 @@ class SchemeCreationControls(ft.Column):
         block = WordToCheckSchemeControls()
         block.add_options(self._get_columns())
         self._test_blocks.append(block)
-        self._update_test_block_column()
+        self._update_test_block_row()
 
     @event_with_page_update
     def _remove_test_block(self, e: ft.ControlEvent):
@@ -223,9 +298,12 @@ class SchemeCreationControls(ft.Column):
             self._errors_label.value = "A scheme must have at least one test block."
             return
         self._test_blocks.pop()
-        self._update_test_block_column()
+        self._update_test_block_row()
 
     def _fill_dropdowns(self, e) -> None:
+        self._test_blocks_managing.disabled = False
+        self._create_scheme_button.disabled = False
+
         column = self._get_columns()
         self._translation_column_index_input.options = deepcopy(column)
         self._word_status_column_index_input.options = deepcopy(column)
@@ -233,8 +311,12 @@ class SchemeCreationControls(ft.Column):
             i.add_options(column)
         self.update()
 
-    def _update_test_block_column(self):
-        self._test_blocks_column.controls = self._test_blocks
+    def _update_test_block_row(self):
+        max_width = self.overall_width-self.overall_width//4
+        desired_width = len(self._test_blocks)*self._test_blocks[0].width + 20
+        width = max_width if desired_width > max_width else desired_width
+        self._test_blocks_row.width = width
+        self._test_blocks_row.controls = self._test_blocks
 
     def _get_columns(self) -> list[ft.dropdown.Option]:
         sheet_name = self._sheet_choice.value
@@ -260,7 +342,7 @@ class SchemeManagingControls(ft.Row):
 
         self.no_vocabulary_file_label = ft.Text(color="red")
 
-        self.scheme_creation = SchemeCreationControls()
+        self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width-20)
 
         self.scheme_deletion = SchemeDeletionControls()
         self.scheme_deletion.visible = False
@@ -274,7 +356,8 @@ class SchemeManagingControls(ft.Row):
             self.no_vocabulary_file_label.value = "You have no vocabulary file configured. \n" \
                                                   "Please go to `File`."
         self.controls_list = [self.no_vocabulary_file_label, self.scheme_creation, self.scheme_deletion]
-        super().__init__(self.controls_list)
+        super().__init__(self.controls_list, alignment=ft.MainAxisAlignment.CENTER,
+                         vertical_alignment=ft.CrossAxisAlignment.CENTER)
 
     def go_to(self, destination: str):
         destination = destination.rsplit("_")[-1]
