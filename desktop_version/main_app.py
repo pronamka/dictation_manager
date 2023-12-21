@@ -7,10 +7,9 @@ from copy import deepcopy
 import flet as ft
 import pandas as pd
 
-from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError, BaseExceptionWithUIMessage, \
-    InvalidRangeOfWordsError, ExcelAppOpenedError
-from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
-    WordsGetter, RowToCheck, Dictation, DictationContent, Choice, AnswerCheckedResponse
+from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError
+from desktop_version.core import SETTINGS
+from desktop_version.dictation_window import DictationControls
 
 
 def schemes_as_options():
@@ -80,430 +79,6 @@ class PathToVocabularyControls(ft.Column):
     @property
     def vocabulary_path_valid(self) -> bool:
         return self.check_path_to_vocabulary(self.path_to_vocabulary)
-
-
-class DictationRunControls(ft.Column):
-    translation_label_text = "Translation of the current word: {}"
-    answer_correctness_relations = {
-        AnswerCorrectness.CORRECT: ["Right.", "green"],
-        AnswerCorrectness.INCORRECT: ["Wrong.", "red"],
-        AnswerCorrectness.WITH_HINT: ["Answer Shown. You will be asked to type it again afterwards.", "yellow"]
-    }
-
-    dictation_completed_message = "Congratulations! You have completed the dictation. \n" \
-                                  "The statuses of the words in your sheet have been updated."
-    dictation_stopped_message = "Dictation was stopped. The statuses of the words in your sheet have been updated."
-    answer_shown_instructions = "The word(s) was(were): {}. Now type it(them) to remember."
-    translation_text_template = "Translation: {}"
-    instructions_text_template = "Instructions: {}"
-    information_about_the_word_template = "Information about the word: {}"
-    no_information_message = "There was no information about that word."
-
-    def __init__(self, page: ft.Page, reload_function: Callable, block_width: int):
-        self.page = page
-        self.reload_function = reload_function
-        self.block_width = block_width
-
-        self.page.on_keyboard_event = self.get_hint_through_keyboard
-
-        self.synonyms_label = ft.Text(color=ft.colors.DEEP_PURPLE, size=15)
-        self.variations_left_label = ft.Text(color="red", size=15)
-        self.previous_word_label = ft.Text(
-            "Here will be your previous answer.",
-            size=18
-        )
-        self.additional_information_label = ft.Text(
-            "Here will be the information about the previous answer.",
-            size=15
-        )
-
-        self.translation_label = ft.Text(
-            self.translation_text_template.format(""),
-            size=23,
-        )
-        self.instructions_label = ft.Text(
-            self.instructions_text_template.format(""),
-            size=20,
-        )
-
-        self.hints_label = ft.Text()
-
-        self.user_input = ft.TextField(
-            on_submit=self.send_answer,
-        )
-
-        self.answer_correctness_indicator = ft.Text(size=20)
-
-        self.stop_dictation_button = ft.ElevatedButton("Stop Dictation", on_click=self.stop_dictation_request)
-        self.show_answer_button = ft.ElevatedButton("Show answer", on_click=self.show_answer)
-
-        self.dictation_ended_label = ft.Text("")
-
-        self.previous_word_block_title = ft.Text(
-            "Information about the previous word.",
-            style=ft.TextThemeStyle.TITLE_LARGE,
-            text_align=ft.TextAlign.CENTER
-        )
-
-        self.current_word_block_title = ft.Text(
-            "Current word.",
-            style=ft.TextThemeStyle.TITLE_LARGE,
-            text_align=ft.TextAlign.CENTER
-        )
-        self.empty_separator = ft.Container(height=20)
-
-        self.controls_list = [self.previous_word_block_title,
-                              self.previous_word_label, self.additional_information_label,
-                              self.empty_separator,
-                              self.current_word_block_title,
-                              self.translation_label, self.instructions_label,
-                              self.synonyms_label, self.variations_left_label,
-                              self.answer_correctness_indicator,
-                              self.hints_label, self.user_input, self.show_answer_button,
-                              self.stop_dictation_button, self.dictation_ended_label]
-
-        self.dictation = None
-        self.awaiting_hint_typed = False
-        super().__init__(self.controls_list)
-        self.set_width()
-
-    def set_width(self):
-        for i in self.controls:
-            i.width = self.block_width
-
-    def get_hint_through_keyboard(self, e: ft.KeyboardEvent):
-        if e.key == "H" and e.ctrl is True:
-            self.show_answer(e)
-
-    def stop_dictation_request(self, e: ft.ControlEvent):
-        self.dictation.stop()
-        self.stop_dictation(self.dictation_stopped_message)
-
-    def run_dictation(self, dictation_content: DictationContent):
-        self.disabled = False
-        self.answer_correctness_indicator.value = ""
-
-        self.dictation_ended_label.value = ""
-        self.dictation = Dictation(dictation_content, SETTINGS.path)
-        self.dictation.run()
-        self.display_current_word()
-
-    def display_current_word(self):
-        try:
-            cur_word: Union[bool, Choice] = self.dictation.get_word()
-        except ExcelAppOpenedError as e:
-            self.handle_excel_errors(e)
-            return
-        if not cur_word:
-            self.stop_dictation(self.dictation_completed_message)
-            return
-        cur_word: Choice = cur_word
-        self.translation_label.value = self.translation_text_template.format(cur_word.translation)
-        self.instructions_label.value = self.instructions_text_template.format(cur_word.instructions)
-        self.synonyms_label.visible = False
-        if cur_word.with_synonyms:
-            self.synonyms_label.value = cur_word.with_synonyms
-            self.synonyms_label.visible = True
-        self.variations_left_label.value = cur_word.amount_of_words_left
-
-    def show_answer(self, e: ft.ControlEvent):
-        self.awaiting_hint_typed = True
-        self.clear_labels()
-        word: Choice = self.dictation.show_answer()
-        self.hints_label.value = self.answer_shown_instructions.format(word.show_all_translation())
-        self.user_input.focus()
-        self.page.update()
-
-    def send_answer(self, e: ft.ControlEvent):
-        res: AnswerCheckedResponse = self.dictation.check_answer(self.user_input.value, (not self.awaiting_hint_typed))
-        if self.awaiting_hint_typed:
-            self.awaiting_hint_typed = False
-            self.hints_label.value = ""
-            self.display_correctness_indicator(AnswerCorrectness.WITH_HINT)
-        elif not res.is_right:
-            self.display_correctness_indicator(AnswerCorrectness.INCORRECT)
-            self.user_input.focus()
-            self.page.update()
-            return
-        else:
-            self.display_correctness_indicator(AnswerCorrectness.CORRECT)
-
-        self.display_previous_word(res)
-        self.user_input.value = ""
-        self.display_current_word()
-        self.user_input.focus()
-        self.page.update()
-
-    def display_previous_word(self, word: AnswerCheckedResponse):
-        self.variations_left_label.value = word.synonyms_left
-
-        self.previous_word_label.value = word.other_variations
-        information = self.no_information_message if word.info_to_given_word in ["nan", "n-"] else \
-            self.information_about_the_word_template.format(word.info_to_given_word)
-        self.additional_information_label.value = information
-
-    def display_correctness_indicator(self, state: AnswerCorrectness):
-        scheme = self.answer_correctness_relations.get(state)
-        self.answer_correctness_indicator.value = scheme[0]
-        self.answer_correctness_indicator.color = scheme[1]
-
-    def clear_labels(self):
-        self.translation_label.value = ""
-        self.instructions_label.value = ""
-
-    def handle_excel_errors(self, e: ExcelAppOpenedError):
-        self.dictation_ended_label.value = e.message()
-        self.dictation_ended_label.color = "red"
-        self.user_input.disabled = True
-        self.show_answer_button.disabled = True
-        self.stop_dictation_button.disabled = False
-
-    def stop_dictation(self, message: str):
-        try:
-            self.dictation.stop()
-        except ExcelAppOpenedError as e:
-            self.handle_excel_errors(e)
-            return
-        self.dictation_ended_label.value = message
-        self.clear_labels()
-        self.previous_word_label.value = ""
-        self.additional_information_label.value = ""
-        self.disabled = True
-        self.reload_function()
-
-
-class SchemeChoiceControls(ft.Column):
-    schemes_key = "schemes"
-    no_schemes_message = "You do not have any schemes configured. Please go to schemes " \
-                         "creation panel and create a scheme to proceed."
-
-    def __init__(self, scheme_chosen_function: Callable):
-        self.schemes = SETTINGS.get(self.schemes_key)
-        self.schemes_dropdown = ft.Dropdown(
-            options=[ft.dropdown.Option(i) for i in self.schemes.keys()],
-            on_change=lambda x: scheme_chosen_function(x.control.value),
-            autofocus=True,
-
-            label="Scheme Name",
-            hint_text="Which scheme do you want to practice?"
-        )
-
-        self.no_schemes_label = ft.Text(color="red")
-        self.no_schemes_label.visible = False
-
-        self._check_for_schemes()
-        self.controls_list = [self.schemes_dropdown, self.no_schemes_label]
-        super().__init__(self.controls_list)
-
-    def _check_for_schemes(self) -> bool:
-        if self.schemes:
-            return True
-        self.schemes_dropdown.disabled = True
-        self.no_schemes_label.value = self.no_schemes_message
-        self.no_schemes_label.visible = True
-        return False
-
-    @property
-    def valid_schemes_present(self) -> bool:
-        return bool(self.schemes)
-
-    @property
-    def chosen_scheme(self) -> str:
-        return self.schemes_dropdown.value
-
-
-class DictationRunSettingsControls(ft.Column):
-    target_states = ["NEW", "NORMAL", "NEEDS_REVISION", "all"]
-
-    def __init__(self, page: ft.Page, start_dictation_function: Callable):
-        self.page = page
-        self.start_dictation_function = start_dictation_function
-
-        self.sheet_processing_error_label = ft.Text(color="red")
-
-        self.range_label = ft.Text("Range: ")
-        self.range_start = ft.TextField(label="from", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
-        self.range_end = ft.TextField(label="to", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
-
-        self.range_controls = ft.Row(
-            [self.range_label, self.range_start, self.range_end],
-            alignment=ft.MainAxisAlignment.SPACE_AROUND
-        )
-
-        self.target_choice = ft.Dropdown(
-            options=[ft.dropdown.Option(i) for i in self.target_states],
-            label="Word Status",
-            hint_text="Words with what status you want to practice?"
-        )
-        self.target_choice.value = "NEW"
-
-        self.with_narrator_checkbox = ft.Checkbox(label="With Narration?")
-        self.with_narrator_checkbox.value = True
-
-        self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=self.send_dictation_settings)
-
-        self.error_with_chosen_settings_label = ft.Text(color="red")
-
-        self.controls_list = [self.sheet_processing_error_label, self.range_controls, self.target_choice,
-                              self.with_narrator_checkbox, self.start_dictation_button,
-                              self.error_with_chosen_settings_label]
-
-        self.allowed_range: range = range(2, 2)
-        self.sheet, self.scheme = None, None
-
-        super().__init__(self.controls_list)
-
-    def set_width(self, width: int):
-        for i in self.controls:
-            i.width = width
-
-    def send_dictation_settings(self, e):
-        try:
-            inputs = self.process_inputs()
-            self.start_dictation(*inputs)
-        except BaseExceptionWithUIMessage as e:
-            self.error_with_chosen_settings_label.value = e.message()
-            self.page.update()
-
-    def fill_controls(self, sheet: pd.DataFrame, scheme: SheetScheme) -> None:
-        sheet_valid = self.check_sheet_validity(sheet, scheme)
-        self.sheet = sheet
-        self.scheme = scheme
-        if not sheet_valid:
-            return
-        self.fill_range(sheet)
-        self.disabled = False
-        self.page.update()
-
-    def fill_range(self, sheet: pd.DataFrame):
-        self.range_start.value = 2
-        self.range_end.value = sheet.shape[0]
-        self.allowed_range = range(2, sheet.shape[0])
-
-    def check_sheet_validity(self, sheet: pd.DataFrame, scheme: SheetScheme) -> bool:
-        try:
-            SheetToSchemeCompatibilityChecker(sheet, scheme).check_compatibility()
-            return True
-        except BaseExceptionWithUIMessage as e:
-            self.sheet_processing_error_label.value = e.message()
-            self.disabled = True
-            return False
-
-    def process_inputs(self) -> tuple[range, str, bool]:
-        start, stop = int(self.range_start.value), int(self.range_end.value)
-        input_range = range(start, stop)
-        if start > stop or start < self.allowed_range.start or stop > self.allowed_range.stop:
-            raise InvalidRangeOfWordsError(self.allowed_range.start, self.allowed_range.stop)
-        return input_range, self.target_choice.value, self.with_narrator_checkbox.value
-
-    def start_dictation(
-            self,
-            words_range: range,
-            target: str,
-            with_narration: bool = True,
-            with_shuffle: bool = True
-    ) -> Union[None, DictationContent]:
-        if not self.scheme:
-            ...
-        try:
-            words = WordsGetter(self.sheet, self.scheme, words_range, target, with_shuffle).get_words()
-            self.error_with_chosen_settings_label.value = ""
-            return self.start_dictation_function(words)
-        except BaseExceptionWithUIMessage as e:
-            self.error_with_chosen_settings_label.value = e.message()
-            self.page.update()
-
-
-class DictationSettingsControls(ft.Column):
-
-    def __init__(self, page: ft.Page, send_words_function: Callable,
-                 dictation_finished_message: str = ""):
-        self.page = page
-        width = page.window_width // 3 - 20
-        self.send_words_function = send_words_function
-        self.no_vocabulary_path_set_label = ft.Text(color="red")
-        self.section_label = ft.Text("Dictation Settings", style=ft.TextThemeStyle.TITLE_LARGE)
-
-        self.scheme_choice_controls = SchemeChoiceControls(self.fill_run_settings)
-        if not SETTINGS.vocabulary_path_valid:
-            self.scheme_choice_controls.disabled = True
-            self.no_vocabulary_path_set_label.value = "You have no vocabulary file configured. \n" \
-                                                      "Please go to `File`."
-
-        self.dictation_run_settings_controls = DictationRunSettingsControls(page, self.start_dictation)
-        self.dictation_run_settings_controls.disabled = True
-        self.dictation_run_settings_controls.set_width(width)
-
-        self.statues_updated_label = ft.Text(
-            dictation_finished_message,
-            color="green",
-            width=width,
-            text_align=ft.TextAlign.CENTER
-        )
-
-        self.controls_list = [self.section_label, self.no_vocabulary_path_set_label, self.scheme_choice_controls,
-                              self.dictation_run_settings_controls, self.statues_updated_label]
-
-        self.sheet, self.scheme = None, None
-
-        super().__init__(self.controls_list)
-        self.alignment = ft.MainAxisAlignment.CENTER
-        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-        self.width = page.window_width // 3 - 20
-
-    def fill_run_settings(self, scheme_name: str):
-        self.scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
-        sheet_name = self.scheme.sheet_name
-        self.sheet = ExcelParser.get_sheet(sheet_name)
-        self.dictation_run_settings_controls.fill_controls(self.sheet, self.scheme)
-        self.page.update()
-
-    def start_dictation(self, words: dict[int, RowToCheck]):
-        self.send_words_function(words)
-
-    def set_width(self, width: int):
-        for i in self.controls:
-            i.width = width
-
-
-class DictationControls(ft.Row):
-    dictation_finished_message = "Dictation finished! \nThe statuses of the words have been updated."
-
-    def __init__(self, reload: Callable, page: ft.Page):
-        self.page = page
-        self.reload = reload
-
-        self.dictation_settings = DictationSettingsControls(page, self.start_dictation)
-
-        self.dictation = DictationRunControls(self.page, self.dictation_ended, self.page.window_width // 1.5 - 30)
-        self.dictation.disabled = True
-        self.dictation.visible = False
-
-        self.controls_list = [self.dictation_settings, self.dictation]
-
-        super().__init__(self.controls_list, alignment=ft.MainAxisAlignment.CENTER,
-                         vertical_alignment=ft.CrossAxisAlignment.CENTER)
-
-    def start_dictation(self, words: DictationContent):
-        self.dictation_settings.disabled = True
-        self.dictation_settings.visible = False
-
-        self.dictation.visible = True
-        self.dictation.disabled = False
-        self.dictation.run_dictation(words)
-        self.update()
-
-    def dictation_ended(self):
-        self.dictation.visible = False
-        self.dictation.disabled = True
-
-        self.dictation_settings.disabled = False
-        self.dictation_settings.visible = True
-
-        self.dictation_settings.controls = DictationSettingsControls(self.page, self.start_dictation,
-                                                                     self.dictation_finished_message).controls
-        self.dictation_settings.statues_updated_label.visible = True
-        self.update()
 
 
 class WordToCheckSchemeControls(ft.Column):
@@ -721,8 +296,6 @@ class SchemeManagingControls(ft.Row):
         self.page = page
         self.reload = reload
 
-        self.navigation_bar = SchemeManagingNavigationBar(self.go_to)
-
         self.no_vocabulary_file_label = ft.Text(color="red")
 
         self.scheme_creation = SchemeCreationControls(self.scheme_created_reload, self.page, "")
@@ -730,17 +303,20 @@ class SchemeManagingControls(ft.Row):
         self.scheme_deletion = SchemeDeletionControls(self.scheme_deleted_reload, self.page)
         self.scheme_deletion.visible = False
 
-        self.navigation_routes = {"creation": self.scheme_creation, "deletion": self.scheme_deletion}
-        print(SETTINGS.path)
-        print(SETTINGS.vocabulary_path_valid)
+        self.navigation_routes = {
+            "creation": self.scheme_creation,
+            "alteration": ft.Row(),
+            "deletion": self.scheme_deletion,
+        }
         if not SETTINGS.vocabulary_path_valid:
             self.no_vocabulary_file_label.value = "You have no vocabulary file configured. \n" \
                                                   "Please go to `File`."
-        self.controls_list = [self.navigation_bar, ft.Column([self.no_vocabulary_file_label,
-                                                              self.scheme_creation, self.scheme_deletion])]
+        self.controls_list = [self.no_vocabulary_file_label, self.scheme_creation, self.scheme_deletion]
         super().__init__(self.controls_list)
 
     def go_to(self, destination: str):
+        destination = destination.rsplit("_")[-1]
+        self.visible = True
         for i in self.navigation_routes.values():
             i.visible = False
         destination_object = self.navigation_routes.get(destination)
@@ -760,17 +336,69 @@ class SchemeManagingControls(ft.Row):
 
 class MenuBar(ft.Row):
     def __init__(self, navigation_function: Callable):
-        self.dictation_window_button = ft.ElevatedButton(
-            text="Dictation",
-            data="dictation",
+        self.dictation_window_button = ft.Text(
+            disabled=False,
+            spans=[
+                ft.TextSpan(
+                    "D",
+                    ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
+                    on_click=lambda x: navigation_function("dictation")
+                ),
+                ft.TextSpan(
+                    "ictation",
+                    on_click=lambda x: navigation_function("dictation")
+                ),
+            ],
+            size=18,
+            data="dictation"
         )
-        self.scheme_creation_window_button = ft.ElevatedButton("Schemes", data="schemes")
-        self.vocabulary_path_window_button = ft.ElevatedButton("File", data="file")
-        self.controls_list = [self.dictation_window_button, self.scheme_creation_window_button,
-                              self.vocabulary_path_window_button]
 
-        for i in self.controls_list:
-            i.on_click = lambda x: navigation_function(x)
+        self.scheme_managing_popup = ft.PopupMenuButton(
+            content=ft.Text(
+                disabled=False,
+                spans=[
+                    ft.TextSpan(
+                        "S",
+                        ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
+                    ),
+                    ft.TextSpan(
+                        "cheme Managing"
+                    )
+                ],
+                size=18),
+            items=[
+                ft.PopupMenuItem(
+                    text="Scheme Creation",
+                    on_click=lambda x: navigation_function("scheme_creation")
+                ),
+                ft.PopupMenuItem(
+                    text="Scheme Alteration",
+                    on_click=lambda x: navigation_function("scheme_alteration")
+                ),
+                ft.PopupMenuItem(
+                    text="Scheme Deletion",
+                    on_click=lambda x: navigation_function("scheme_deletion")
+                ),
+            ],
+        )
+        self.vocabulary_path_window_button = ft.Text(
+            disabled=False,
+            spans=[
+                ft.TextSpan(
+                    "F",
+                    ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
+                    on_click=lambda x: navigation_function("file")
+                ),
+                ft.TextSpan(
+                    "ile",
+                    on_click=lambda x: navigation_function("file")
+                ),
+            ],
+            size=18,
+        )
+
+        self.controls_list = [self.vocabulary_path_window_button, self.dictation_window_button,
+                              self.scheme_managing_popup]
 
         super().__init__(self.controls_list)
         self.alignment = ft.alignment.center_left
@@ -785,7 +413,6 @@ class MainPage:
 
     def __init__(self, page: ft.Page):
         self.page = page
-        # self.page.window_full_screen = True
         self.page.scroll = "always"
         self.page.window_resizable = False
         self.page.window_max_width = self.page.width
@@ -793,36 +420,31 @@ class MainPage:
         self.page.window_center()
         self.page.on_window_event = self.process_window_event
 
-        """self.page.window_max_width = 1500
-        self.page.window_max_height = 800
-        screen_width, screen_height = GetSystemMetrics(0), GetSystemMetrics(1)
-        self.page.window_width = min(self.page.window_max_width, screen_width)
-        self.page.window_height = min(self.page.window_max_height, screen_height)"""
-
         self.page_menu = MenuBar(self.window_changed)
 
         self.dictation_controls = DictationControls(self.dictation_reload, self.page)
         self.schemes = SchemeManagingControls(self.scheme_managing_reload, self.page)
         self.vocabulary_path_controls = PathToVocabularyControls(self.vocabulary_path_reload)
+        self.dictation_controls.visible = True
         self.schemes.visible = False
         self.vocabulary_path_controls.visible = False
 
-        self.navigation_routes = {"dictation": self.dictation_controls, "schemes": self.schemes,
-                                  "file": self.vocabulary_path_controls}
+        self.navigation_routes = {
+            "file": (self.vocabulary_path_controls, lambda x: (self.vocabulary_path_controls.__setattr__("visible", True))),
+            "dictation": (self.dictation_controls, lambda x: (self.dictation_controls.__setattr__("visible", True))),
+            "scheme": (self.schemes, lambda x: (self.schemes.go_to(x))),
+        }
+
+        self.current_page_name = ft.Text("Dictation", size=30)
         self.bar = ft.Container(
             ft.Row(
-                controls=[ft.Icon(ft.icons.WORK), ft.Text("Dictation", size=30),
-                          self.page_menu],
+                controls=[ft.Icon(ft.icons.WORK), self.page_menu],
+                spacing=20
             ),
             bgcolor=ft.colors.SURFACE_VARIANT,
             padding=10,
         )
-        """self.page.appbar = ft.AppBar(
-            leading=ft.Icon(ft.icons.WORK),
-            title=ft.Text("Dictation"),
-            actions=[self.page_menu],
-            bgcolor=ft.colors.SURFACE_VARIANT,
-        )"""
+
         self.controls_list = ft.Column([
             self.bar,
             self.dictation_controls,
@@ -845,13 +467,12 @@ class MainPage:
         self.dictation_controls.controls = DictationControls(self.dictation_reload, self.page).controls
         self.page.update()
 
-    def window_changed(self, e: ft.ControlEvent):
-        destination = e.control.data
+    def window_changed(self, destination: str):
+        general_destination = destination.split("_")[0]
         for i in self.navigation_routes.values():
-            i.visible = False
-        destination_object = self.navigation_routes.get(destination)
-        destination_object.reload()
-        destination_object.visible = True
+            i[0].visible = False
+        destination_object = self.navigation_routes.get(general_destination)
+        destination_object[1](destination)
         self.page.update()
 
 
