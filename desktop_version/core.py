@@ -1,5 +1,7 @@
 import os
+import sys
 
+from io import BytesIO
 from typing import Union, Callable, Generator
 from collections import deque
 from ast import literal_eval
@@ -8,6 +10,9 @@ import pywintypes
 
 import numpy as np
 import pandas as pd
+from gtts import gTTS
+from gtts.tts import gTTSError
+import pygame
 
 from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
     InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError
@@ -410,12 +415,45 @@ class Dictation:
         return response_data
 
     def count_as_right(self) -> None:
-        """Here we add the word to self.completed_successfully"""
+        """Here we add the word to self.completed_successfully."""
         self.completed_successfully.add(self._current_row[0])
 
     @property
     def is_running(self) -> bool:
         return self._dictation_running
 
+
+class Narrator:
+    sound_narrator = pygame
+    sound_narrator.init()
+    sound_narrator.mixer.init()
+    language = "de"
+    connection_error = False
+
+    @classmethod
+    def narrate(cls, text_to_narrate: str) -> None:
+        try:
+            if cls.connection_error:
+                return
+            else:
+                cls.create_sound(text_to_narrate)
+        except gTTSError:
+            cls.connection_error = True
+            print("Couldn't narrate. Narrating turned off. \n"
+                  "Establish Internet connection and relaunch the dictation to turn on it back on.",
+                  file=sys.stderr)
+
+    @classmethod
+    def create_sound(cls, text_to_narrate: str) -> None:
+        text_to_speech = gTTS(text_to_narrate, lang=cls.language)
+        sound = BytesIO()
+        text_to_speech.write_to_fp(sound)
+        sound.seek(0)
+        cls._play_sound(sound)
+
+    @classmethod
+    def _play_sound(cls, audio: BytesIO):
+        cls.sound_narrator.mixer.music.load(audio)
+        cls.sound_narrator.mixer.music.play()
 
 SETTINGS = Settings()
