@@ -4,9 +4,9 @@ from enum import Enum
 import pandas as pd
 import flet as ft
 
-from exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, ExcelAppOpenedError
+from desktop_version.exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, ExcelAppOpenedError
 from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
-    WordsGetter, RowToCheck, Dictation, DictationContent, Choice, AnswerCheckedResponse
+    WordsGetter, RowToCheck, Dictation, DictationContent, Choice, AnswerCheckedResponse, Narrator
 
 
 class AnswerCorrectness(Enum):
@@ -149,6 +149,8 @@ class DictationRunControls(ft.Column):
 
     def send_answer(self, e: ft.ControlEvent):
         res: AnswerCheckedResponse = self.dictation.check_answer(self.user_input.value, (not self.awaiting_hint_typed))
+        initial_input = self.user_input.value
+        answer_right = False
         if self.awaiting_hint_typed:
             self.awaiting_hint_typed = False
             self.hints_label.value = ""
@@ -159,6 +161,7 @@ class DictationRunControls(ft.Column):
             self.page.update()
             return
         else:
+            answer_right = True
             self.display_correctness_indicator(AnswerCorrectness.CORRECT)
 
         self.display_previous_word(res)
@@ -166,6 +169,8 @@ class DictationRunControls(ft.Column):
         self.display_current_word()
         self.user_input.focus()
         self.page.update()
+        if answer_right:
+            Narrator.narrate(initial_input)
 
     def display_previous_word(self, word: AnswerCheckedResponse):
         self.variations_left_label.value = word.synonyms_left
@@ -351,7 +356,6 @@ class DictationSettingsControls(ft.Column):
 
     def __init__(self, page: ft.Page, send_words_function: Callable,
                  dictation_finished_message: str = ""):
-        self.page = page
         width = page.window_width // 3 - 20
         self.send_words_function = send_words_function
         self.no_vocabulary_path_set_label = ft.Text(color="red")
@@ -389,7 +393,7 @@ class DictationSettingsControls(ft.Column):
         sheet_name = self.scheme.sheet_name
         self.sheet = ExcelParser.get_sheet(sheet_name)
         self.dictation_run_settings_controls.fill_controls(self.sheet, self.scheme)
-        self.page.update()
+        self.update()
 
     def start_dictation(self, words: dict[int, RowToCheck]):
         self.send_words_function(words)
