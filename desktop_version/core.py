@@ -19,6 +19,15 @@ from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoun
 from desktop_version.excel_modifier import ExcelModifier
 
 
+class CellFillers:
+    empty_cell = "nan"
+    skip_cell = "n-"
+
+    @classmethod
+    def __contains__(cls, item: str) -> bool:
+        return item == cls.empty_cell or item == cls.skip_cell
+
+
 class Settings(dict):
     settings_filename = "settings.txt"
     vocabulary_key = "PATH_TO_VOCABULARY"
@@ -118,6 +127,9 @@ class SheetToSchemeCompatibilityChecker:
         data_package = (self.scheme.sheet_name, self.scheme.status, status_string, line_index)
         try:
             status_name, status_power = status_string.split("*")
+            status_power = int(status_power)
+            if not status_name:
+                raise InvalidStatusError(*data_package)
         except ValueError:
             raise InvalidStatusError(*data_package)
         if status_name not in StaticSettings.available_statuses or (not (1 <= int(status_power) <= 50)):
@@ -155,13 +167,16 @@ class WordToCheck:
         for k, i in self.pairs.items():
             if k == answer:
                 continue
-            s += k + f"({i}), "
+            c = "" if i in CellFillers() else f"({i})"
+            s += k + c + f", "
         return s.removesuffix(", ")
 
     def return_as_options(self) -> str:
         s = ""
         for k, i in self.pairs.items():
-            s += k + f"({i})/"
+            c = "" if i in CellFillers() else f"({i})"
+            s += k + c + "/"
+
         return s.removesuffix("/")
 
 
@@ -171,6 +186,10 @@ class Choice:
     synonyms_left_message = "You still have to provide {} possible translation(s)."
 
     def __init__(self, translation: str, words_string: str, instructions: str, additional_info_string: str):
+        self.is_empty = words_string in CellFillers()
+        if self.is_empty:
+            return
+
         self._translation = translation
         self._instructions = instructions
 
@@ -238,12 +257,14 @@ class RowToCheck:
         }
 
         for i in self.scheme.to_check:
-            self.row["to_check"].append(Choice(
+            choice = Choice(
                 self.content[self.scheme.translation],
                 content[i.get("spelling", 0)],
                 i.get("comment", ""),
                 content[i.get("info", 0)]
-            ))
+            )
+            if not choice.is_empty:
+                self.row["to_check"].append(choice)
 
     @property
     def translation(self) -> str:
@@ -340,6 +361,7 @@ class Dictation:
         self.completed_successfully = set()
 
         self.live_queue = deque(self.words_to_check.items())
+        self.revision_queue = []
 
         self.words_generator: Generator
 
@@ -364,6 +386,10 @@ class Dictation:
         return self.words_generator.__next__()
 
     def update_words_generator(self) -> bool:
+        if self.revision_queue and not self.live_queue:
+            shuffle(self.revision_queue)
+            self.live_queue.extend(self.revision_queue)
+            self.revision_queue.clear()
         if self.live_queue:
             current_row: [int, RowToCheck] = self.live_queue.popleft()
             self.words_generator = self.give_row_item(*current_row)
@@ -399,7 +425,7 @@ class Dictation:
     def show_answer(self) -> Choice:
         """Here we should return the answer and information about it, put the presently
         questioned word in the end of the queue and add it to self.revision_required"""
-        self.live_queue.append(self._current_row)
+        self.revision_queue.append(self._current_row)
         self.revision_required.add(self._current_row[0])
         cur_word = self._current_word
         self.update_words_generator()
