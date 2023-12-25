@@ -305,6 +305,14 @@ class DictationContent:
         self.words = words
         self.scheme = scheme
 
+    @property
+    def narration_language(self) -> str:
+        return self.scheme.narration_language
+
+    @property
+    def narration_possible(self) -> bool:
+        return self.scheme.narration_possible
+
 
 class WordsGetter:
 
