@@ -15,7 +15,7 @@ from gtts.tts import gTTSError
 import pygame
 
 from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
-    InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError
+    InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError, NarrationError
 from desktop_version.excel_modifier import ExcelModifier
 
 
@@ -490,9 +490,7 @@ class Narrator:
                 self.create_sound(text_to_narrate)
         except gTTSError:
             self.connection_error = True
-            print("Couldn't narrate. Narrating turned off. \n"
-                  "Establish Internet connection and relaunch the dictation to turn on it back on.",
-                  file=sys.stderr)
+            raise NarrationError()
 
     def create_sound(self, text_to_narrate: str) -> None:
         text_to_speech = gTTS(text_to_narrate, lang=self.narration_language)
