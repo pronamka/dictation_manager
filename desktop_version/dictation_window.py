@@ -451,6 +451,8 @@ class DictationSettingsControls(ft.Column):
         if not SETTINGS.vocabulary_path_valid:
             self.scheme_choice_controls.disabled = True
             self.no_vocabulary_path_set_label.value = self.no_vocabulary_path_set_message
+        else:
+            self.no_vocabulary_path_set_label.value = ""
         self.statues_updated_label.value = ""
         self.statues_updated_label.visible = False
 
@@ -458,14 +460,14 @@ class DictationSettingsControls(ft.Column):
         self.sheet, self.scheme = None, None
 
     def fill_run_settings(self, scheme_name: str):
-        self.scheme = SheetScheme(*SETTINGS.schemes.get(scheme_name))
+        self.scheme = SheetScheme(SETTINGS.schemes.get(scheme_name))
         sheet_name = self.scheme.sheet_name
         self.sheet = ExcelParser.get_sheet(sheet_name)
         self.dictation_run_settings_controls.fill_controls(self.sheet, self.scheme)
         self.update()
 
-    def start_dictation(self, words: dict[int, RowToCheck]):
-        self.send_words_function(words)
+    def start_dictation(self, dictation_settings: tuple[bool, DictationContent]):
+        self.send_words_function(dictation_settings)
 
     def set_width(self, width: int):
         for i in self.controls:
@@ -474,9 +476,8 @@ class DictationSettingsControls(ft.Column):
 
 class DictationControls(ft.Row):
 
-    def __init__(self, outside_reload: Callable, page: ft.Page):
+    def __init__(self, page: ft.Page):
         self.page = page
-        self.outside_reload = outside_reload
 
         self.controls_list = [
             DictationSettingsControls(page, self.start_dictation),
@@ -492,13 +493,13 @@ class DictationControls(ft.Row):
         super().__init__(self.controls_list, alignment=ft.MainAxisAlignment.CENTER,
                          vertical_alignment=ft.CrossAxisAlignment.CENTER)
 
-    def start_dictation(self, words: DictationContent):
+    def start_dictation(self, dictation_settings: tuple[bool, DictationContent]):
         self.dictation_settings.disabled = True
         self.dictation_settings.visible = False
 
         self.dictation.visible = True
         self.dictation.disabled = False
-        self.dictation.run_dictation(words)
+        self.dictation.run_dictation(dictation_settings)
         self.update()
 
     def dictation_ended(self):
