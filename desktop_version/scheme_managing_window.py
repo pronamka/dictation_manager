@@ -258,11 +258,11 @@ class SchemeCreationControls(ft.Column):
         self._update_test_block_row()
 
         self._errors_label.value = ""
-        self._scheme_created_label = ""
+        self._scheme_created_label.value = ""
 
     def _scheme_created(self, scheme_name: str) -> None:
         self.reload()
-        self._scheme_created_label = self._scheme_created_message_template.format(scheme_name)
+        self._scheme_created_label.value = self._scheme_created_message_template.format(scheme_name)
 
     def _create_scheme(self, e):
         try:
