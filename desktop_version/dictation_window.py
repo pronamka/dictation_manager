@@ -104,8 +104,9 @@ class DictationRunControls(ft.Column):
 
         self.inputs = [self.user_input, self.show_answer_button, self.stop_dictation_button]
 
-        self.dictation = None
-        self.awaiting_hint_typed = False
+        self.dictation, self.narrator = None, None
+        self.awaiting_hint_typed, self.with_narration = False, False
+
         super().__init__(self.controls_list)
         self.set_width()
 
@@ -131,9 +132,13 @@ class DictationRunControls(ft.Column):
         self.dictation.stop()
         self.stop_dictation(self.dictation_stopped_message)
 
-    def run_dictation(self, dictation_content: DictationContent):
+    def run_dictation(self, dictation_settings: tuple[bool, DictationContent]):
         self.disabled = False
 
+        dictation_content = dictation_settings[1]
+        self.with_narration = dictation_settings[0] and dictation_content.narration_possible
+        if self.with_narration:
+            self.narrator = Narrator(dictation_content.narration_language)
         self.dictation = Dictation(dictation_content, SETTINGS.path)
         self.dictation.run()
         self.display_current_word()
@@ -186,8 +191,8 @@ class DictationRunControls(ft.Column):
         self.display_current_word()
         self.user_input.focus()
         self.page.update()
-        if answer_right:
-            Narrator.narrate(initial_input)
+        if answer_right and self.with_narration:
+            self.narrator.narrate(initial_input)
 
     def display_previous_word(self, word: AnswerCheckedResponse):
         self.variations_left_label.value = word.synonyms_left
