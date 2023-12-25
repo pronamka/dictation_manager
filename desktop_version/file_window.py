@@ -1,7 +1,5 @@
 import os
 
-from typing import Callable
-
 import flet as ft
 
 from desktop_version.core import SETTINGS
@@ -16,11 +14,9 @@ class PathToVocabularyControls(ft.Column):
 
     path_to_vocabulary_message = "Path to the file with vocabulary: {}"
 
-    def __init__(self, reload: Callable):
+    def __init__(self):
         self.path_to_vocabulary = SETTINGS.get(self.vocabulary_key)
         self.is_path_correct = self.check_path_to_vocabulary(self.path_to_vocabulary)
-
-        self.reload = reload
 
         self.path_to_vocabulary_label = ft.Text(value=self.path_to_vocabulary.format(self.path_to_vocabulary))
 
@@ -37,6 +33,16 @@ class PathToVocabularyControls(ft.Column):
             self.incorrect_vocabulary_path
         ]
         super().__init__(self.controls_list)
+
+    def reload(self, external: bool = False):
+        if external:
+            self.visible = True
+        self.path_to_vocabulary = SETTINGS.get(self.vocabulary_key)
+        self.is_path_correct = self.check_path_to_vocabulary(self.path_to_vocabulary)
+        self.path_to_vocabulary_label.value = self.path_to_vocabulary.format(self.path_to_vocabulary)
+        self.vocabulary_file_input.value = ""
+        self.incorrect_vocabulary_path.value = "" if self.is_path_correct else self.no_path_set_message
+        self.update()
 
     def set_path_to_vocabulary(self, e) -> None:
         new_path = self.vocabulary_file_input.value
