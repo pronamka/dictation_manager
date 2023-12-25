@@ -507,7 +507,12 @@ class DictationControls(ft.Row):
         self.dictation_settings.show_statues_updated_message()
         self.update()
 
-    def reload(self):
+    def reload(self, external: bool = False):
+        if external:
+            self.visible = True
+        if external and self.dictation.visible:
+            return
+
         self.dictation.visible = False
         self.dictation.disabled = True
 
