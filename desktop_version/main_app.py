@@ -95,16 +95,16 @@ class MainPage:
 
         self.page_menu = MenuBar(self.window_changed)
 
-        self.dictation_controls = DictationControls(self.dictation_reload, self.page)
-        self.schemes = SchemeManagingControls(self.scheme_managing_reload, self.page)
-        self.vocabulary_path_controls = PathToVocabularyControls(self.vocabulary_path_reload)
+        self.dictation_controls = DictationControls(self.page)
+        self.schemes = SchemeManagingControls(self.page)
+        self.vocabulary_path_controls = PathToVocabularyControls()
         self.dictation_controls.visible = True
         self.schemes.visible = False
         self.vocabulary_path_controls.visible = False
 
         self.navigation_routes = {
-            "file": (self.vocabulary_path_controls, lambda x: (self.vocabulary_path_controls.__setattr__("visible", True))),
-            "dictation": (self.dictation_controls, lambda x: (self.dictation_controls.__setattr__("visible", True))),
+            "file": (self.vocabulary_path_controls, lambda x: ...),
+            "dictation": (self.dictation_controls, lambda x: ...),
             "scheme": (self.schemes, lambda x: (self.schemes.go_to(x))),
         }
 
@@ -128,23 +128,12 @@ class MainPage:
         page.add(self.controls_list)
         self.page.update()
 
-    def vocabulary_path_reload(self):
-        self.vocabulary_path_controls.controls = PathToVocabularyControls(self.vocabulary_path_reload).controls
-        self.page.update()
-
-    def scheme_managing_reload(self):
-        self.schemes.controls = SchemeManagingControls(self.scheme_managing_reload, self.page).controls
-        self.page.update()
-
-    def dictation_reload(self):
-        self.dictation_controls.controls = DictationControls(self.dictation_reload, self.page).controls
-        self.page.update()
-
     def window_changed(self, destination: str):
         general_destination = destination.split("_")[0]
         for i in self.navigation_routes.values():
             i[0].visible = False
         destination_object = self.navigation_routes.get(general_destination)
+        destination_object[0].reload(external=True)
         destination_object[1](destination)
         self.page.update()
 
