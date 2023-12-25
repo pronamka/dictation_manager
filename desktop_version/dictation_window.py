@@ -4,9 +4,10 @@ from enum import Enum
 import pandas as pd
 import flet as ft
 
-from desktop_version.exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, ExcelAppOpenedError
+from desktop_version.exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, \
+    ExcelAppOpenedError, NarrationError
 from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
-    WordsGetter, RowToCheck, Dictation, DictationContent, Choice, AnswerCheckedResponse, Narrator
+    WordsGetter, Dictation, DictationContent, Choice, AnswerCheckedResponse, Narrator
 
 
 class AnswerCorrectness(Enum):
@@ -192,7 +193,10 @@ class DictationRunControls(ft.Column):
         self.user_input.focus()
         self.page.update()
         if answer_right and self.with_narration:
-            self.narrator.narrate(initial_input)
+            try:
+                self.narrator.narrate(initial_input)
+            except NarrationError as e:
+                self.errors_label.value = e.message()
 
     def display_previous_word(self, word: AnswerCheckedResponse):
         self.variations_left_label.value = word.synonyms_left
