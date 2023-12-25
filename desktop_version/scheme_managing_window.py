@@ -362,12 +362,14 @@ class SchemeCreationControls(ft.Column):
         return file, sheets
 
 
-class SchemeManagingControls(ft.Row):
-    def __init__(self, reload: Callable, page: ft.Page):
-        self.page = page
-        self.reload = reload
+class SchemeManagingControls(ft.Column):
 
-        self.no_vocabulary_file_label = ft.Text(color="red")
+    no_vocabulary_file_message = "You have no vocabulary file configured. Please go to `File`."
+
+    def __init__(self, page: ft.Page):
+        self.page = page
+
+        self.no_vocabulary_file_label = ft.Text(color="red", size=20)
 
         self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width-20)
 
@@ -379,12 +381,19 @@ class SchemeManagingControls(ft.Row):
             "alteration": ft.Row(),
             "deletion": self.scheme_deletion,
         }
-        if not SETTINGS.vocabulary_path_valid:
-            self.no_vocabulary_file_label.value = "You have no vocabulary file configured. \n" \
-                                                  "Please go to `File`."
         self.controls_list = [self.no_vocabulary_file_label, self.scheme_creation, self.scheme_deletion]
         super().__init__(self.controls_list, alignment=ft.MainAxisAlignment.CENTER,
-                         vertical_alignment=ft.CrossAxisAlignment.CENTER)
+                         horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+
+    def set_vocabulary_file_label(self):
+        self.no_vocabulary_file_label.value = "" if SETTINGS.vocabulary_path_valid else self.no_vocabulary_file_message
+
+    def reload(self, external: bool = False):
+        if external:
+            self.visible = True
+        self.scheme_deletion.reload()
+        self.scheme_creation.reload()
+        self.set_vocabulary_file_label()
 
     def go_to(self, destination: str):
         destination = destination.rsplit("_")[-1]
