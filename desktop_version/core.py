@@ -66,20 +66,37 @@ class Settings(dict):
 class SheetScheme:
     """Represents a scheme of an Excel sheet.
     provides information on how the data is stored on the sheet."""
-    def __init__(self,
-                 sheet_name: str,
-                 translation_index: int,
-                 status_index: int,
-                 to_check: list[dict[str, Union[str, int]]]
-                 ) -> None:
-        self.sheet_name = sheet_name
-        self.translation = translation_index
-        self.status = status_index
-        self.to_check = to_check
+
+    sheet_name_key = "sheet_name"
+    translation_column_index_key = "translation_column_index"
+    status_column_index_key = "status_column_index"
+    narration_language_key = "narration_language"
+    to_check_key = "to_check"
+
+    keys = [sheet_name_key, translation_column_index_key, status_column_index_key,
+            narration_language_key, to_check_key]
+
+    def __init__(self, parameters: dict) -> None:
+        self.sheet_name = parameters.get(self.sheet_name_key, "")
+        self.translation = parameters.get(self.translation_column_index_key, "")
+        self.status = parameters.get(self.status_column_index_key, "")
+        self.narration_language = parameters.get(self.narration_language_key, "")
+        self.to_check = parameters.get(self.to_check_key, "")
 
     @property
-    def get_sheet_name(self):
+    def narration_possible(self) -> bool:
+        return self.narration_language != "false" and self.narration_language
+
+    @property
+    def get_sheet_name(self) -> bool:
         return self.sheet_name
+
+    @classmethod
+    def to_scheme(
+            cls,
+            parameters: tuple[str, int, int, str, list[dict[str, Union[str, int]]]]
+    ) -> dict[str, Union[int, str, list[dict[str, Union[str, int]]]]]:
+        return {key: value for key, value in zip(cls.keys, parameters)}
 
 
 class ExcelParser:
