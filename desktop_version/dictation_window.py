@@ -307,12 +307,16 @@ class DictationRunSettingsControls(ft.Column):
         self.with_narrator_checkbox = ft.Checkbox(label="With Narration?")
         self.with_narrator_checkbox.value = True
 
+        self.with_shuffle_checkbox = ft.Checkbox(label="Shuffle Words?")
+        self.with_shuffle_checkbox.value = True
+
         self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=self.send_dictation_settings)
 
         self.error_with_chosen_settings_label = ft.Text(color="red")
 
         self.controls_list = [self.sheet_processing_error_label, self.range_controls, self.target_choice,
-                              self.with_narrator_checkbox, self.start_dictation_button,
+                              self.with_narrator_checkbox, self.with_shuffle_checkbox,
+                              self.start_dictation_button,
                               self.error_with_chosen_settings_label]
 
         self.user_inputs = [self.range_start, self.range_end, self.target_choice]
@@ -329,6 +333,7 @@ class DictationRunSettingsControls(ft.Column):
             i.disabled = False
         self.target_choice.value = "NEW"
         self.with_narrator_checkbox.value = True
+        self.with_shuffle_checkbox.value = True
         self.start_dictation_button.disabled = False
         for i in self.text_messages:
             i.value = ""
@@ -372,12 +377,13 @@ class DictationRunSettingsControls(ft.Column):
             self.disabled = True
             return False
 
-    def process_inputs(self) -> tuple[range, str, bool]:
+    def process_inputs(self) -> tuple[range, str, bool, bool]:
         start, stop = int(self.range_start.value), int(self.range_end.value)
         input_range = range(start, stop)
         if start > stop or start < self.allowed_range.start or stop > self.allowed_range.stop:
             raise InvalidRangeOfWordsError(self.allowed_range.start, self.allowed_range.stop)
-        return input_range, self.target_choice.value, self.with_narrator_checkbox.value
+        return input_range, self.target_choice.value, \
+               self.with_narrator_checkbox.value, self.with_shuffle_checkbox.value
 
     def start_dictation(
             self,
@@ -391,7 +397,7 @@ class DictationRunSettingsControls(ft.Column):
         try:
             words = WordsGetter(self.sheet, self.scheme, words_range, target, with_shuffle).get_words()
             self.error_with_chosen_settings_label.value = ""
-            return self.start_dictation_function(words)
+            return self.start_dictation_function((with_narration, words))
         except BaseExceptionWithUIMessage as e:
             self.error_with_chosen_settings_label.value = e.message()
             self.page.update()
