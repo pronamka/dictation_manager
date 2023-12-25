@@ -5,7 +5,7 @@ import pandas as pd
 import flet as ft
 
 from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError
-from desktop_version.core import SETTINGS
+from desktop_version.core import SETTINGS, SheetScheme
 
 
 def event_with_page_update(func: Callable) -> Callable:
@@ -19,6 +19,23 @@ def event_with_page_update(func: Callable) -> Callable:
 
 def schemes_as_options():
     return [ft.dropdown.Option(i) for i in SETTINGS.schemes]
+
+
+class AllowedNarrationLanguages:
+    languages = {'bg': 'Bulgarian', 'hr': 'Croatian', 'cs': 'Czech', 'da': 'Danish', 'nl': 'Dutch',
+                 'en': 'English', 'et': 'Estonian', 'fi': 'Finnish', 'fr': 'French', 'de': 'German',
+                 'el': 'Greek', 'hu': 'Hungarian', 'it': 'Italian', 'lv': 'Latvian', 'pl': 'Polish',
+                 'pt': 'Portuguese', 'ro': 'Romanian', 'sk': 'Slovak', 'es': 'Spanish', 'sv': 'Swedish'}
+
+    @classmethod
+    def is_allowed(cls, abbreviation: str) -> bool:
+        return cls.languages.get(abbreviation, False) is not False
+
+    @classmethod
+    def as_options(cls) -> list[ft.dropdown.Option]:
+        options = [ft.dropdown.Option(key=i[0], text=i[1]+f" ({i[0]})") for i in cls.languages.items()]
+        options.append(ft.dropdown.Option(key=False, text="No narration"))
+        return options
 
 
 class WordToCheckSchemeControls(ft.Column):
@@ -147,6 +164,10 @@ class SchemeCreationControls(ft.Column):
             label="Status Column",
             hint_text="Which column contains the status of the word?"
         )
+        self._narration_language_input = ft.Dropdown(
+            label="Narration Language",
+            hint_text="The language of the words you are learning?"
+        )
 
         self._empty_separator = ft.Container(height=30)
 
@@ -198,6 +219,7 @@ class SchemeCreationControls(ft.Column):
         controls = [self._title, self._general_scheme_settings_title,
                     self._sheet_choice, self._scheme_name,
                     self._translation_column_index_input, self._word_status_column_index_input,
+                    self._narration_language_input,
                     self._empty_separator,
                     self._test_blocks_managing_title,
                     self._test_blocks_managing, self._errors_label,
@@ -205,7 +227,8 @@ class SchemeCreationControls(ft.Column):
                     self._scheme_created_label]
 
         self._inputs = [self._sheet_choice, self._scheme_name,
-                        self._translation_column_index_input, self._word_status_column_index_input]
+                        self._translation_column_index_input, self._word_status_column_index_input,
+                        self._narration_language_input]
 
         super().__init__(controls)
 
@@ -255,12 +278,13 @@ class SchemeCreationControls(ft.Column):
             self._errors_label.value = "Fill in all the fields."
         self.update()
 
-    def _build_scheme(self) -> tuple[str, int, int, list[dict[str, Union[str, int]]]]:
+    def _build_scheme(self) -> dict[str, Union[int, str, list[dict[str, Union[str, int]]]]]:
         sheet_name = self._sheet_choice.value
         if not sheet_name:
             raise TypeError
         translation_column_index = int(self._translation_column_index_input.value.split(" - ", maxsplit=1)[0]) - 1
         word_status_column_index = int(self._word_status_column_index_input.value.split(" - ", maxsplit=1)[0]) - 1
+        narration_language = self._narration_language_input.value
 
         test_blocks = []
         for i in self._test_blocks:
@@ -273,11 +297,12 @@ class SchemeCreationControls(ft.Column):
             block = {"comment": label, "spelling": word_index, "info": info_index}
             test_blocks.append(block)
 
-        scheme = (sheet_name, translation_column_index, word_status_column_index, test_blocks)
+        scheme = SheetScheme.to_scheme((sheet_name, translation_column_index, word_status_column_index,
+                                        narration_language, test_blocks))
         return scheme
 
     @staticmethod
-    def _write_scheme(name: str, scheme: tuple[str, int, int, list[dict[str, Union[str, int]]]]):
+    def _write_scheme(name: str, scheme: dict[str, Union[int, str, list[dict[str, Union[str, int]]]]]):
         schemes: dict = SETTINGS.get("schemes")
         if schemes.get(name, None):
             raise SchemeExistsError(name)
@@ -307,6 +332,8 @@ class SchemeCreationControls(ft.Column):
         column = self._get_columns()
         self._translation_column_index_input.options = deepcopy(column)
         self._word_status_column_index_input.options = deepcopy(column)
+        self._narration_language_input.options = AllowedNarrationLanguages.as_options()
+        self._narration_language_input.value = "No narration"
         for i in self._test_blocks:
             i.add_options(column)
         self.update()
