@@ -257,11 +257,13 @@ class SchemeChoiceControls(ft.Column):
         self.schemes = SETTINGS.get(self.schemes_key)
         self.schemes_dropdown.value = ""
         self.schemes_dropdown.options = [ft.dropdown.Option(i) for i in self.schemes.keys()]
-        self.no_schemes_label.visible = ""
         self._check_for_schemes()
+        self.update()
 
     def _check_for_schemes(self) -> bool:
         if self.schemes:
+            self.schemes_dropdown.disabled = False
+            self.no_schemes_label.visible = False
             return True
         self.schemes_dropdown.disabled = True
         self.no_schemes_label.value = self.no_schemes_message
