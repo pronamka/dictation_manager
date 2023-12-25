@@ -475,36 +475,34 @@ class Dictation:
 
 
 class Narrator:
-    sound_narrator = pygame
-    sound_narrator.init()
-    sound_narrator.mixer.init()
-    language = "de"
-    connection_error = False
+    def __init__(self, narration_language: str):
+        self.narration_language = narration_language
+        self.sound_narrator = pygame
+        self.sound_narrator.init()
+        self.sound_narrator.mixer.init()
+        self.connection_error = False
 
-    @classmethod
-    def narrate(cls, text_to_narrate: str) -> None:
+    def narrate(self, text_to_narrate: str) -> None:
         try:
-            if cls.connection_error:
+            if self.connection_error:
                 return
             else:
-                cls.create_sound(text_to_narrate)
+                self.create_sound(text_to_narrate)
         except gTTSError:
-            cls.connection_error = True
+            self.connection_error = True
             print("Couldn't narrate. Narrating turned off. \n"
                   "Establish Internet connection and relaunch the dictation to turn on it back on.",
                   file=sys.stderr)
 
-    @classmethod
-    def create_sound(cls, text_to_narrate: str) -> None:
-        text_to_speech = gTTS(text_to_narrate, lang=cls.language)
+    def create_sound(self, text_to_narrate: str) -> None:
+        text_to_speech = gTTS(text_to_narrate, lang=self.narration_language)
         sound = BytesIO()
         text_to_speech.write_to_fp(sound)
         sound.seek(0)
-        cls._play_sound(sound)
+        self._play_sound(sound)
 
-    @classmethod
-    def _play_sound(cls, audio: BytesIO):
-        cls.sound_narrator.mixer.music.load(audio)
-        cls.sound_narrator.mixer.music.play()
+    def _play_sound(self, audio: BytesIO):
+        self.sound_narrator.mixer.music.load(audio)
+        self.sound_narrator.mixer.music.play()
 
 SETTINGS = Settings()
