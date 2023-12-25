@@ -15,7 +15,7 @@ class SchemeExistsError(BaseExceptionWithUIMessage):
         self.scheme_name = scheme_name
 
     def message(self):
-        return self.error_message.format(self.scheme_name)
+        return self.error_message.format(scheme_name=self.scheme_name)
 
 
 class InvalidIndexesError(BaseExceptionWithUIMessage):
@@ -111,6 +111,14 @@ class NoWordsMatchingSettings(BaseExceptionWithUIMessage):
 class ExcelAppOpenedError(BaseExceptionWithUIMessage):
     error_message = "We can't save your results when your Excel app is opened. \n" \
                     "Please close it and press `Stop Dictation`."
+
+    def message(self) -> str:
+        return self.error_message
+
+
+class NarrationError(BaseExceptionWithUIMessage):
+    error_message = "Couldn't narrate. Narrating turned off. \n" \
+                    "Establish Internet connection and relaunch the dictation to turn on it back on."
 
     def message(self) -> str:
         return self.error_message
