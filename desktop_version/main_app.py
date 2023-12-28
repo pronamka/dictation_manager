@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 
 import flet as ft
 
@@ -7,71 +7,70 @@ from desktop_version.file_window import PathToVocabularyControls
 from desktop_version.scheme_managing_window import SchemeManagingControls
 
 
+class NavigationBarLabel(ft.Text):
+    def __init__(self, text: str, on_click_function: Union[Callable, None] = None):
+        spans = [
+                ft.TextSpan(
+                    text[0],
+                    ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
+                ),
+                ft.TextSpan(
+                    text[1:],
+                ),
+            ]
+        if on_click_function:
+            for i in spans:
+                i.on_click = lambda x: on_click_function()
+
+        super(NavigationBarLabel, self).__init__(
+            disabled=False,
+            size=18,
+            spans=spans,
+        )
+
+
 class MenuBar(ft.Row):
     def __init__(self, navigation_function: Callable):
-        self.dictation_window_button = ft.Text(
-            disabled=False,
-            spans=[
-                ft.TextSpan(
-                    "D",
-                    ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
-                    on_click=lambda x: navigation_function("dictation")
-                ),
-                ft.TextSpan(
-                    "ictation",
-                    on_click=lambda x: navigation_function("dictation")
-                ),
-            ],
-            size=18,
-            data="dictation"
+        self.dictation_window_button = NavigationBarLabel(
+            "Dictation",
+            lambda: navigation_function("dictation")
         )
 
         self.scheme_managing_popup = ft.PopupMenuButton(
-            content=ft.Text(
-                disabled=False,
-                spans=[
-                    ft.TextSpan(
-                        "S",
-                        ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
-                    ),
-                    ft.TextSpan(
-                        "chemes"
-                    )
-                ],
-                size=18),
+            content=NavigationBarLabel(
+                "Schemes",
+                None,
+            ),
             items=[
                 ft.PopupMenuItem(
                     text="Scheme Creation",
                     on_click=lambda x: navigation_function("scheme_creation")
                 ),
-                ft.PopupMenuItem(
-                    text="Scheme Alteration",
-                    on_click=lambda x: navigation_function("scheme_alteration")
-                ),
+
                 ft.PopupMenuItem(
                     text="Scheme Deletion",
                     on_click=lambda x: navigation_function("scheme_deletion")
                 ),
             ],
         )
-        self.vocabulary_path_window_button = ft.Text(
-            disabled=False,
-            spans=[
-                ft.TextSpan(
-                    "F",
-                    ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
-                    on_click=lambda x: navigation_function("file")
-                ),
-                ft.TextSpan(
-                    "ile",
-                    on_click=lambda x: navigation_function("file")
-                ),
-            ],
-            size=18,
+
+        """ft.PopupMenuItem(
+                    text="Scheme Alteration",
+                    on_click=lambda x: navigation_function("scheme_alteration")
+                ),"""
+
+        self.vocabulary_path_window_button = NavigationBarLabel(
+            "File",
+            lambda: navigation_function("file")
+        )
+
+        self.help_window_button=NavigationBarLabel(
+            "Help",
+            lambda: navigation_function("help")
         )
 
         self.controls_list = [self.vocabulary_path_window_button, self.dictation_window_button,
-                              self.scheme_managing_popup]
+                              self.scheme_managing_popup, self.help_window_button]
 
         super().__init__(self.controls_list)
         self.alignment = ft.alignment.center_left
