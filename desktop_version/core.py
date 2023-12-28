@@ -1,5 +1,4 @@
 import os
-import sys
 
 from io import BytesIO
 from typing import Union, Callable, Generator
@@ -120,7 +119,7 @@ class SheetToSchemeCompatibilityChecker:
         self.sheet = np.array(sheet)
         self.scheme = scheme
 
-        self.columns_range = range(0, self.sheet.shape[0])
+        self.columns_range = range(0, self.sheet.shape[1])
 
     def check_compatibility(self) -> None:
         self.check_indexes()
@@ -132,6 +131,7 @@ class SheetToSchemeCompatibilityChecker:
 
         for i in self.scheme.to_check:
             spelling_index, info_index = i.get("spelling", -1), i.get("info", -1)
+            info_index = 0 if info_index is None else info_index
             self.check_indexes_in_range(spelling_index, info_index)
 
     def check_status_column(self) -> None:
@@ -274,11 +274,13 @@ class RowToCheck:
         }
 
         for i in self.scheme.to_check:
+            info_index = i.get("info", 0)
+            info = "" if info_index is None else content[info_index]
             choice = Choice(
                 self.content[self.scheme.translation],
                 content[i.get("spelling", 0)],
                 i.get("comment", ""),
-                content[i.get("info", 0)]
+                info
             )
             if not choice.is_empty:
                 self.row["to_check"].append(choice)
