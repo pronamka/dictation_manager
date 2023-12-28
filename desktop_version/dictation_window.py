@@ -202,7 +202,7 @@ class DictationRunControls(ft.Column):
         self.variations_left_label.value = word.synonyms_left
 
         self.previous_word_label.value = word.other_variations
-        information = self.no_information_message if word.info_to_given_word in ["nan", "n-"] else \
+        information = self.no_information_message if word.info_to_given_word in ["nan", "n-", ""] else \
             self.information_about_the_word_template.format(word.info_to_given_word)
         self.additional_information_label.value = information
 
@@ -376,7 +376,7 @@ class DictationRunSettingsControls(ft.Column):
         try:
             SheetToSchemeCompatibilityChecker(sheet, scheme).check_compatibility()
             return True
-        except BaseExceptionWithUIMessage as e:
+        except Exception as e:
             self.sheet_processing_error_label.value = e.message()
             self.disabled = True
             return False
@@ -456,6 +456,7 @@ class DictationSettingsControls(ft.Column):
             self.scheme_choice_controls.disabled = True
             self.no_vocabulary_path_set_label.value = self.no_vocabulary_path_set_message
         else:
+            self.scheme_choice_controls.disabled = False
             self.no_vocabulary_path_set_label.value = ""
         self.statues_updated_label.value = ""
         self.statues_updated_label.visible = False
