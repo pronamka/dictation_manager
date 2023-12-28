@@ -51,7 +51,7 @@ class WordToCheckSchemeControls(ft.Column):
             hint_text="Which column contains the value you want to check?"
         )
         self._special_information_column_index_input = ft.Dropdown(
-            label="Column with Additional Information",
+            label="Column with Additional Information(Optional)",
             hint_text="Which column contains the additional information about the word checked?"
         )
         self._controls_list = [self._instructions_input, self._word_to_check_column_index_input,
@@ -62,13 +62,17 @@ class WordToCheckSchemeControls(ft.Column):
 
     def add_options(self, options: list[ft.dropdown.Option]):
         self._word_to_check_column_index_input.options = deepcopy(options)
-        self._special_information_column_index_input.options = deepcopy(options)
+        self._special_information_column_index_input.options = deepcopy(options)+[
+            ft.dropdown.Option(key=False, text="No additional information")
+        ]
         self.disabled = False
 
     def get_values(self) -> tuple[str, int, int]:
+        info = self._special_information_column_index_input.value
+        print(info)
+        info = None if info == "false" or info is None else int(info)-1
         return self._instructions_input.value, int(self._word_to_check_column_index_input.
-                                                   value.split(" - ", maxsplit=1)[0]) - 1, \
-               int(self._special_information_column_index_input.value.split(" - ", maxsplit=1)[0]) - 1
+                                                   value) - 1, info
 
     def clean(self):
         self._instructions_input.clean()
@@ -282,8 +286,8 @@ class SchemeCreationControls(ft.Column):
         sheet_name = self._sheet_choice.value
         if not sheet_name:
             raise TypeError
-        translation_column_index = int(self._translation_column_index_input.value.split(" - ", maxsplit=1)[0]) - 1
-        word_status_column_index = int(self._word_status_column_index_input.value.split(" - ", maxsplit=1)[0]) - 1
+        translation_column_index = int(self._translation_column_index_input.value) - 1
+        word_status_column_index = int(self._word_status_column_index_input.value) - 1
         narration_language = self._narration_language_input.value
 
         test_blocks = []
@@ -348,7 +352,7 @@ class SchemeCreationControls(ft.Column):
     def _get_columns(self) -> list[ft.dropdown.Option]:
         sheet_name = self._sheet_choice.value
         sheet: pd.DataFrame = self._file.parse(sheet_name)
-        return [ft.dropdown.Option(f"{index} - {name}") for index, name in enumerate(sheet.columns, start=1)]
+        return [ft.dropdown.Option(key=int(index), text=f"{index} - {name}") for index, name in enumerate(sheet.columns, start=1)]
 
     def _fill_sheet_choice_options(self):
         self._file, self._sheets = self._parse_excel(SETTINGS.path)
