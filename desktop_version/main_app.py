@@ -96,7 +96,8 @@ class MainPage:
 
         self.dictation_controls = DictationControls(self.page)
         self.schemes = SchemeManagingControls(self.page)
-        self.vocabulary_path_controls = PathToVocabularyControls()
+        self.vocabulary_path_controls = PathToVocabularyControls(self.page.window_width)
+
         self.dictation_controls.visible = True
         self.schemes.visible = False
         self.vocabulary_path_controls.visible = False
