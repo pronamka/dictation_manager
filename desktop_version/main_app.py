@@ -5,6 +5,7 @@ import flet as ft
 from desktop_version.dictation_window import DictationControls
 from desktop_version.file_window import PathToVocabularyControls
 from desktop_version.scheme_managing_window import SchemeManagingControls
+from desktop_version.help_window import HelpWindow
 
 
 class NavigationBarLabel(ft.Text):
@@ -102,10 +103,14 @@ class MainPage:
         self.schemes.visible = False
         self.vocabulary_path_controls.visible = False
 
+        self.help = HelpWindow(self.page)
+        self.help.visible = False
+
         self.navigation_routes = {
             "file": (self.vocabulary_path_controls, lambda x: ...),
             "dictation": (self.dictation_controls, lambda x: ...),
             "scheme": (self.schemes, lambda x: (self.schemes.go_to(x))),
+            "help": (self.help, lambda x: ...)
         }
 
         self.current_page_name = ft.Text("Dictation", size=30)
@@ -122,8 +127,9 @@ class MainPage:
             self.bar,
             self.dictation_controls,
             self.schemes,
-            self.vocabulary_path_controls
-        ])
+            self.vocabulary_path_controls,
+            self.help
+        ], expand=True)
 
         page.add(self.controls_list)
         self.page.update()
