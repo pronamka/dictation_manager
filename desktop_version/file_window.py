@@ -12,16 +12,19 @@ class PathToVocabularyControls(ft.Column):
     invalid_path_message = "Path `{}` does not exist."
     invalid_file_extension_message = "File with vocabulary must have `.xlsx` extension."
 
-    path_to_vocabulary_message = "Path to the file with vocabulary: {}"
+    path_to_vocabulary_message = "Path to the file with vocabulary:\n {}"
 
-    def __init__(self):
+    def __init__(self, width: int):
         self.path_to_vocabulary = SETTINGS.get(self.vocabulary_key)
         self.is_path_correct = self.check_path_to_vocabulary(self.path_to_vocabulary)
 
-        self.path_to_vocabulary_label = ft.Text(value=self.path_to_vocabulary.format(self.path_to_vocabulary))
+        self.path_to_vocabulary_label = ft.Text(
+            value=self.path_to_vocabulary_message.format(self.path_to_vocabulary),
+            size=16,
+        )
 
         self.vocabulary_file_input = ft.TextField(label="path to vocabulary")
-        self.set_path_button = ft.ElevatedButton("Set path", on_click=self.set_path_to_vocabulary)
+        self.set_path_button = ft.ElevatedButton("Set path", on_click=self.set_path_to_vocabulary, width=width//2)
 
         self.incorrect_vocabulary_path = ft.Text(color="red")
         if not self.is_path_correct:
@@ -29,17 +32,23 @@ class PathToVocabularyControls(ft.Column):
 
         self.controls_list = [
             self.path_to_vocabulary_label,
-            ft.Row([self.vocabulary_file_input, self.set_path_button]),
+            self.vocabulary_file_input,
+            self.set_path_button,
             self.incorrect_vocabulary_path
         ]
-        super().__init__(self.controls_list)
+        super().__init__(
+            [ft.Column(self.controls_list, width=width//2, horizontal_alignment=ft.CrossAxisAlignment.CENTER)],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            width=width
+        )
 
     def reload(self, external: bool = False):
         if external:
             self.visible = True
         self.path_to_vocabulary = SETTINGS.get(self.vocabulary_key)
         self.is_path_correct = self.check_path_to_vocabulary(self.path_to_vocabulary)
-        self.path_to_vocabulary_label.value = self.path_to_vocabulary.format(self.path_to_vocabulary)
+        self.path_to_vocabulary_label.value = self.path_to_vocabulary_message.format(self.path_to_vocabulary)
         self.vocabulary_file_input.value = ""
         self.incorrect_vocabulary_path.value = "" if self.is_path_correct else self.no_path_set_message
         self.update()
