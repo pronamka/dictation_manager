@@ -83,7 +83,7 @@ class WordToCheckSchemeControls(ft.Column):
 class SchemeDeletionControls(ft.Column):
     _scheme_deleted_message_template = "Scheme `{}` was successfully deleted."
 
-    def __init__(self):
+    def __init__(self, width: int):
 
         self._schemes = ft.Dropdown()
         self._delete_scheme_button = ft.ElevatedButton("Delete", on_click=self.delete_scheme)
@@ -92,11 +92,14 @@ class SchemeDeletionControls(ft.Column):
         self._scheme_deleted_label = ft.Text(color="green")
 
         super().__init__([
-            ft.Row([self._schemes, self._delete_scheme_button]),
+            self._schemes, self._delete_scheme_button,
             self._error_label,
             self._scheme_deleted_label
-        ])
-
+        ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            width=width
+        )
         self._fill_dropdown()
 
     def _fill_dropdown(self):
@@ -377,7 +380,7 @@ class SchemeManagingControls(ft.Column):
 
         self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width-20)
 
-        self.scheme_deletion = SchemeDeletionControls()
+        self.scheme_deletion = SchemeDeletionControls(width=self.page.window_width//2-20)
         self.scheme_deletion.visible = False
 
         self.navigation_routes = {
