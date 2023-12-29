@@ -85,20 +85,32 @@ class SchemeDeletionControls(ft.Column):
 
     def __init__(self, width: int):
 
-        self._schemes = ft.Dropdown()
-        self._delete_scheme_button = ft.ElevatedButton("Delete", on_click=self.delete_scheme)
+        self.block_title = ft.Text(
+            "Scheme Deletion",
+            style=ft.TextThemeStyle.TITLE_LARGE
+        )
+
+        self._schemes = ft.Dropdown(
+            label="Scheme To Delete",
+            hint_text="Choose what scheme you want to delete",
+            autofocus=True,
+        )
+        self._delete_scheme_button = ft.ElevatedButton("Delete", on_click=self.delete_scheme, width=width//2)
         self._error_label = ft.Text(color="red")
         self._error_label.visible = False
         self._scheme_deleted_label = ft.Text(color="green")
 
-        super().__init__([
-            self._schemes, self._delete_scheme_button,
-            self._error_label,
-            self._scheme_deleted_label
-        ],
-            alignment=ft.MainAxisAlignment.CENTER,
+        super().__init__(
+            [ft.Column([
+                self.block_title,
+                self._schemes, self._delete_scheme_button,
+                self._error_label,
+                self._scheme_deleted_label
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, width=width//2)],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
             width=width
+
         )
         self._fill_dropdown()
 
@@ -380,7 +392,7 @@ class SchemeManagingControls(ft.Column):
 
         self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width-20)
 
-        self.scheme_deletion = SchemeDeletionControls(width=self.page.window_width//2-20)
+        self.scheme_deletion = SchemeDeletionControls(width=self.page.window_width-20)
         self.scheme_deletion.visible = False
 
         self.navigation_routes = {
