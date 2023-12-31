@@ -24,7 +24,7 @@ class ExcelModifier:
         ("NEEDS_REVISION", "NEEDS_REVISION"): lambda ra: ST.nrs.format(ra + 1),
         ("NEEDS_REVISION", "NORMAL"): lambda ra: ST.nrs.format(ra - 1) if ra - 1 else ST.nmo,
         ("NORMAL", "NEEDS_REVISION"): lambda ra: ST.nrs.format(2),
-        ("NEW", "NEEDS_REVISION"): lambda ra: ST.nws.format(ra) if ra > 1 else ST.nrs.format(ra + 1),
+        ("NEW", "NEEDS_REVISION"): lambda ra: ST.nws.format(ra) if ra > 1 else ST.nws.format(ra + 1),
         ("NEW", "NORMAL"): lambda ra: ST.nws.format(ra - 1) if ra - 1 else ST.nmo,
         ("NORMAL", "NORMAL"): lambda ra: ST.nmo,
     }
