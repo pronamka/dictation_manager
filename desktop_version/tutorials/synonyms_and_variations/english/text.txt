@@ -1,0 +1,24 @@
+Synonyms and word variations.
+
+Here we will cover how to give synonyms and word variations.
+
+SYNONYMS
+
+We will take the german words `glauben` and `meinen` as an example. Both of them translate as `think` to english, and if you add them to your vocabulary sheet separately, you will not know when to type which word. So, to give synonyms, we use `|` sign:
+`glauben|meinen`. In this case you will have to give both words during the dictation. You will see this message: AAA
+
+
+You can have as many synonyms as you like, the app will tell you how many there is and how many you still have to give.
+If you want to provide additional information for synonyms, also use `|` sign, in the same order as you have given the words. For instance, if you wanted to give transcriptions, you would do it so: AAA
+
+
+WORD VARIATIONS
+
+Sometimes, nouns can have several plural forms, verbs - regular and irregular conjugations, adjectives - comparative and superlative forms. For instance, the plural form of the german word `Milch` (milk) can be both `Milche` and `Milchen`. In this case, you do not need to know both forms, one will be enough. You can add both forms to the sheet with `/` sign between them.
+`Milche/Milchen`. You will be able to give any of those variations.
+If you want to give additional information for variations, also use `/` sign.
+
+
+You can combine synonyms and variations. For instance the word `zoo` can be translated to german both as `Zoo`(`Zoos` in the plural form) and `Tierpark`(has two plural forms: `Tierparks` and `Tierparke`). In this case you would combine synonyms and variations like this:
+For singular form column: `Zoo|Tierpark`;
+For plural form column: `Zoos|Tierparks/Tierparke`

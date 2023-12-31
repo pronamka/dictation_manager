@@ -1,0 +1,14 @@
+This app is for learning words, and specifically their spelling, in foreign languages.
+Here is a quick starting guide. In this example we will be creating a sheet and scheme for learning German nouns.
+Open your Excel app(or similar app, e.g. WPS Spreadsheets) and create a new file. AAA
+Write column headings: AAA
+Add some content:AAA
+And status(it is `NEW*2` when adding new words as a rule, but you can read about how statuses work in another tutorial): AAA
+Now save the file, open it in file explorer, right click, press properties and copy path(most likely it will be something like C:\Users\YourUserName\Documents\).
+Go back to the app window, to `File` tab, insert the path and add the name of your file(`Book1.xlsx`). Then press enter. You will see something like this: AAA
+Now we need to go to the `Schemes` -> `Scheme Creation` tab and create a scheme for your sheet.
+Fill in the fields: choose the sheet(you will have only one at this point), give your scheme a name(e.g. `nouns1`), fill your translation and status inputs and choose the langauge you are learning(optional, used to narrate your words). AAA
+Then we fill fields for test blocks(we will have two test blocks, one for word in singular and another for word in plural forms): choose corresponding columns and give instructions for what to type: AAA
+Then press `Create Scheme`. You should see a message saying that scheme was created at the bottom of the page.
+Now we can start the dictation. Go to `Dictation` tab, choose the scheme you just created in the focused field and press `Start Dictation`. You will see the dictation screen: AAA
+Type the word and press Enter. You will see a message telling you whether your answer was correct or not. If you cannot remember the word press `Show answer` button (or press Ctrl+h on your keyboard). Answer will be shown, and you will be asked to repeat it at the end of the dictation(until you get it right). You can stop dictation at any time, or it will end automatically when you have completed all words.

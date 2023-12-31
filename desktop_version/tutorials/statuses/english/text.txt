@@ -1,0 +1,21 @@
+WORD STATUSES
+
+Status consists of two elements: name and multiplier. The name stands before `*` sign, and the multiplier after the sign.(e.g. `NEW*2` - `NEW` is the name and `2` is the multiplier)
+
+NAMES
+
+There are 4 names you can use, they set different rules for changing multiplier:
+
+`NEW` - if you got the word right, the multiplier decreases by 1; If you requested a hint, it does not change; if the multiplier becomes 0, the name changes to `NORMAL` with the multiplier `1` (`NORMAL*1`).
+
+`NORMAL` - if you got the word right, the multiplier remains equal to 1; if you requested a hint, the name changes to `NEEDS_REVISION` and the multiplier to 2 (`NEEDS_REVISION*2`)
+
+`NEEDS_REVISION` - if you got the word right, the multiplier decreases by 1; if you requested a hint, it increases by one; if the multiplier becomes 0, the name changes to NORMAL with the multiplier 1 (`NORMAL*1`).
+
+`DELAYED`(used with the multiplier `1`) - words with this status name will not be in the dictation, they are always omitted. It’s useful in case you want to add a lot of new words at once but learn them gradually.
+
+
+MULTIPLIERS
+
+Multipliers must be in range [1; 50]. This is the only limitation. Multiplier changes
+according to the rules set by the status name.
