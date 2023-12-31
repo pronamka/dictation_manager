@@ -129,7 +129,7 @@ class MainPage:
             self.schemes,
             self.vocabulary_path_controls,
             self.help
-        ], expand=True)
+        ], )
 
         page.add(self.controls_list)
         self.page.update()
