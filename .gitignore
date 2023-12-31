@@ -1,4 +1,7 @@
-desktop_version
+desktop_version/sample_picture.png
+desktop_version/tutorial.mp4
+desktop_version/utils.py
+desktop_version_copy
 experiments
 include
 Lib
