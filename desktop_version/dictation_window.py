@@ -410,7 +410,8 @@ class DictationRunSettingsControls(ft.Column):
 class DictationSettingsControls(ft.Column):
 
     no_vocabulary_path_set_message = "You have no vocabulary file configured. \n" \
-                                                      "Please go to `File`."
+                                                      "Please go to `File` (If it is your first time using " \
+                                     "the app go to `Help`)."
     statuses_updated_message = "Dictation finished! \nThe statuses of the words have been updated."
 
     def __init__(self, page: ft.Page, send_words_function: Callable):
