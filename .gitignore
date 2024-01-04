@@ -17,3 +17,4 @@ words_to_add_t.txt
 .idea
 versions.txt
 dictation/__pycache__
+dictation/
