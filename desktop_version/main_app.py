@@ -2,10 +2,10 @@ from typing import Callable, Union
 
 import flet as ft
 
-from desktop_version.dictation_window import DictationControls
-from desktop_version.file_window import PathToVocabularyControls
-from desktop_version.scheme_managing_window import SchemeManagingControls
-from desktop_version.help_window import HelpWindow
+from dictation_window import DictationControls
+from file_window import PathToVocabularyControls
+from scheme_managing_window import SchemeManagingControls
+from help_window import HelpWindow
 
 
 class NavigationBarLabel(ft.Text):
@@ -92,6 +92,7 @@ class MainPage:
         self.page.window_max_height = self.page.height
         self.page.window_center()
         self.page.on_window_event = self.process_window_event
+        self.page.theme_mode="light"
 
         self.page_menu = MenuBar(self.window_changed)
 
