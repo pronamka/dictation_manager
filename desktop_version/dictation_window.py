@@ -4,9 +4,9 @@ from enum import Enum
 import pandas as pd
 import flet as ft
 
-from desktop_version.exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, \
+from exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, \
     ExcelAppOpenedError, NarrationError
-from desktop_version.core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
+from core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
     WordsGetter, Dictation, DictationContent, Choice, AnswerCheckedResponse, Narrator
 
 

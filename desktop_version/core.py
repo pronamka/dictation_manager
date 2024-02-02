@@ -13,9 +13,9 @@ from gtts import gTTS
 from gtts.tts import gTTSError
 import pygame
 
-from desktop_version.exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
+from exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
     InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError, NarrationError
-from desktop_version.excel_modifier import ExcelModifier
+from excel_modifier import ExcelModifier
 
 
 class CellFillers:

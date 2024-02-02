@@ -2,7 +2,7 @@ import os
 
 import flet as ft
 
-from desktop_version.core import SETTINGS
+from core import SETTINGS
 
 
 class PathToVocabularyControls(ft.Column):
