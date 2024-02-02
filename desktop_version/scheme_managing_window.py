@@ -3,9 +3,10 @@ from copy import deepcopy
 
 import pandas as pd
 import flet as ft
+from gtts.lang import tts_langs
 
-from desktop_version.exceptions import SchemeExistsError, InvalidIndexesError
-from desktop_version.core import SETTINGS, SheetScheme
+from exceptions import SchemeExistsError, InvalidIndexesError
+from core import SETTINGS, SheetScheme
 
 
 def event_with_page_update(func: Callable) -> Callable:
@@ -22,10 +23,7 @@ def schemes_as_options():
 
 
 class AllowedNarrationLanguages:
-    languages = {'bg': 'Bulgarian', 'hr': 'Croatian', 'cs': 'Czech', 'da': 'Danish', 'nl': 'Dutch',
-                 'en': 'English', 'et': 'Estonian', 'fi': 'Finnish', 'fr': 'French', 'de': 'German',
-                 'el': 'Greek', 'hu': 'Hungarian', 'it': 'Italian', 'lv': 'Latvian', 'pl': 'Polish',
-                 'pt': 'Portuguese', 'ro': 'Romanian', 'sk': 'Slovak', 'es': 'Spanish', 'sv': 'Swedish'}
+    languages = tts_langs()
 
     @classmethod
     def is_allowed(cls, abbreviation: str) -> bool:
@@ -33,8 +31,8 @@ class AllowedNarrationLanguages:
 
     @classmethod
     def as_options(cls) -> list[ft.dropdown.Option]:
-        options = [ft.dropdown.Option(key=i[0], text=i[1]+f" ({i[0]})") for i in cls.languages.items()]
-        options.append(ft.dropdown.Option(key=False, text="No narration"))
+        options = [ft.dropdown.Option(key=False, text="No narration")]
+        options += [ft.dropdown.Option(key=i[0], text=i[1]+f" ({i[0]})") for i in cls.languages.items()]
         return options
 
 
