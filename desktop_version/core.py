@@ -166,11 +166,11 @@ class WordToCheck:
         """max_length = max(len(self.word_variations), len(self.info_variations))
         self.word_variations += [""] * (max_length - len(self.word_variations))
         self.info_variations += [""] * (max_length - len(self.info_variations))
-        
+        `
         self.pairs = [(w, i) for w, i in zip(self.word_variations, self.info_variations)]"""
         l = len(self.word_variations) - len(self.info_variations)
         l = 0 if l < 0 else l
-        self.info_variations += [""] * l
+        self.info_variations = [info for _ in range(len(self.word_variations))]
         self.pairs = {w: i for w, i in zip(self.word_variations, self.info_variations)}
 
     def check_answer(self, answer: str) -> tuple[bool, str, str]:
