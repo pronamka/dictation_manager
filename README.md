@@ -1,2 +1,2 @@
 # dictation_manager
-A program to check your wocabulary in different languages using excel sheets
+A program to check your vocabulary in different languages using Excel sheets

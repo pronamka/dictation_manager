@@ -19,3 +19,4 @@ versions.txt
 dictation/__pycache__
 dictation/
 desktop_version/exe_config.json
+output/
