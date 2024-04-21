@@ -1,8 +1,10 @@
 import os
 
-from typing import Callable, Literal
+from typing import Callable
 
 import flet as ft
+
+from user_settings import SETTINGS
 
 
 class TutorialWindow(ft.Column):
@@ -19,10 +21,10 @@ class TutorialWindow(ft.Column):
     blocks_separator = "AAA"
     allowed_languages = ["english", "russian"]
 
-    def __init__(self, page: ft.Page, tutorial_name: str, language: Literal["english", "russian"] = "english") -> None:
+    def __init__(self, page: ft.Page, tutorial_name: str) -> None:
         self.tutorial_name = tutorial_name
-        self.language = "english" if language not in self.allowed_languages else language
-        self.path_to_tutorial = self.path_to_tutorials.get(tutorial_name)+language+"/"
+        self.language = "english" if SETTINGS.app_language not in self.allowed_languages else SETTINGS.app_language
+        self.path_to_tutorial = self.path_to_tutorials.get(tutorial_name)+self.language+"/"
         self.text_file_name = self.text_file_names.get(tutorial_name)
 
         with open(self.path_to_tutorial + self.text_file_name, mode="r", encoding="utf-8") as file:
@@ -68,25 +70,17 @@ class NavigationSideBar(ft.Column):
     word statuses
     synonyms and word variations
     """
+    destination_start = "destination-start"
+    destination_statuses = "destination-statuses"
+    destination_synonyms = "destination-synonyms"
 
-    def __init__(self, navigation_function: Callable, change_language_function: Callable, width):
-        self.language_select = ft.Dropdown(
-            options=[
-                ft.dropdown.Option(key="english", text="English"),
-                ft.dropdown.Option(key="russian", text="Русский"),
-            ],
-            on_change=lambda x: change_language_function(self.language_select.value),
-            label="Tutorial Language",
-            hint_text="Here you can switch tutorial language",
-            autofocus=True
-        )
-        self.language_select.value = ft.dropdown.Option(key="english", text="English")
+    def __init__(self, navigation_function: Callable, width):
+        SETTINGS.translate_widget(self.__class__)
         super(NavigationSideBar, self).__init__(
             [
-                self.language_select,
-                NavigationSideBarDestination("Quick Start", lambda x: navigation_function("quick_start"), width-20),
-                NavigationSideBarDestination("Word Statuses", lambda x: navigation_function("statuses"),width-20),
-                NavigationSideBarDestination("Synonyms and word variations",
+                NavigationSideBarDestination(self.destination_start, lambda x: navigation_function("quick_start"), width-20),
+                NavigationSideBarDestination(self.destination_statuses, lambda x: navigation_function("statuses"),width-20),
+                NavigationSideBarDestination(self.destination_synonyms,
                                              lambda x: navigation_function("synonyms_and_variations"), width-20)
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -96,7 +90,7 @@ class NavigationSideBar(ft.Column):
 class HelpWindow(ft.Container):
     def __init__(self, page: ft.Page):
         self.right_container = ft.Container(
-            NavigationSideBar(self.go_to, self.change_language, page.window_width),
+            NavigationSideBar(self.go_to, page.window_width),
             width=page.window_width//4
         )
         self.left_container = ft.Container(
@@ -121,12 +115,8 @@ class HelpWindow(ft.Container):
             ft.Row([self.right_container, self.left_container],expand=True,height=page.height-80)
         )
 
-    def change_language(self, to_language: Literal["english", "russian"]):
-        self.left_container.content = TutorialWindow(self.page, self.left_container.content.tutorial_name, to_language)
-        self.update()
-
     def go_to(self, destination: str):
-        self.left_container.content = TutorialWindow(self.page, destination, self.left_container.content.language)
+        self.left_container.content = TutorialWindow(self.page, destination)
         self.update()
 
     def reload(self, external: bool = False):

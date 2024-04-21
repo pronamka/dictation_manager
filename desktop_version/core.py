@@ -1,9 +1,6 @@
-import os
-
 from io import BytesIO
 from typing import Union, Callable, Generator
 from collections import deque
-from ast import literal_eval
 from random import shuffle
 import pywintypes
 
@@ -13,6 +10,7 @@ from gtts import gTTS
 from gtts.tts import gTTSError
 import pygame
 
+from user_settings import SETTINGS
 from exceptions import VocabularyFileNotFoundError, SheetNotFoundError, InvalidStatusError, \
     InvalidSchemeError, NoWordsMatchingSettings, ExcelAppOpenedError, NarrationError
 from excel_modifier import ExcelModifier
@@ -25,41 +23,6 @@ class CellFillers:
     @classmethod
     def __contains__(cls, item: str) -> bool:
         return item == cls.empty_cell or item == cls.skip_cell
-
-
-class Settings(dict):
-    settings_filename = "settings.txt"
-    vocabulary_key = "PATH_TO_VOCABULARY"
-    schemes_key = "schemes"
-
-    def __init__(self):
-        with open(self.settings_filename, mode="r") as file:
-            settings_dict = literal_eval(file.read())
-        super().__init__(settings_dict)
-
-    def change_settings(self, key, value) -> None:
-        self[key] = value
-        with open(self.settings_filename, mode="w") as file:
-            file.write(str(self))
-
-    @property
-    def schemes(self) -> dict:
-        return self.get(self.schemes_key, {})
-
-    """@property
-    def schemes_as_options(self) -> list[ft.dropdown.Option]:
-        return [ft.dropdown.Option(i) for i in self.get(self.schemes_key, {}).keys()]"""
-
-    @property
-    def path(self) -> str:
-        return self.get(self.vocabulary_key, "")
-
-    @property
-    def vocabulary_path_valid(self) -> bool:
-        path = self.get(self.vocabulary_key, "")
-        if os.path.exists(path) and path.rsplit(".", maxsplit=1)[-1] == "xlsx":
-            return True
-        return False
 
 
 class SheetScheme:
@@ -504,5 +467,3 @@ class Narrator:
     def _play_sound(self, audio: BytesIO):
         self.sound_narrator.mixer.music.load(audio)
         self.sound_narrator.mixer.music.play()
-
-SETTINGS = Settings()

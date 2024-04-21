@@ -1,17 +1,22 @@
 from abc import ABC, abstractmethod
 
+from user_settings import SETTINGS
+
 
 class BaseExceptionWithUIMessage(Exception, ABC):
+    error_message = "error-message"
+
+    def __init__(self):
+        SETTINGS.translate_widget(self.__class__)
+
     @abstractmethod
     def message(self) -> str:
         """Should return a string that will be displayed to the user in a label."""
 
 
 class SchemeExistsError(BaseExceptionWithUIMessage):
-    error_message = "Scheme with the name `{scheme_name}` already exists. " \
-                    "Give your scheme a different name."
-
     def __init__(self, scheme_name: str) -> None:
+        super().__init__()
         self.scheme_name = scheme_name
 
     def message(self):
@@ -19,25 +24,21 @@ class SchemeExistsError(BaseExceptionWithUIMessage):
 
 
 class InvalidIndexesError(BaseExceptionWithUIMessage):
-    error_messages = ["Indexes of translation and status columns must be unique.",
-                      "Indexes of word and information columns must not be the same."]
-
     def __init__(self, indexes: list[int, int, int, int]) -> None:
+        super().__init__()
         self.translation_index, self.status_index, self.word_index, self.info_index = indexes
 
     def message(self) -> str:
         if self.translation_index == self.status_index or self.translation_index == self.word_index \
                 or self.translation_index == self.info_index or self.status_index == self.word_index or \
                 self.status_index == self.word_index:
-            return self.error_messages[0]
-        return self.error_messages[1]
+            return self.error_message[0]
+        return self.error_message[1]
 
 
 class SheetNotFoundError(BaseExceptionWithUIMessage):
-    error_message = "The sheet name configured for that scheme is `{sheet_name}`, " \
-                    "but that sheet is not present in the file `{file_path}`."
-
     def __init__(self, sheet_name: str, file_path: str) -> None:
+        super().__init__()
         self.sheet_name = sheet_name
         self.file_path = file_path
 
@@ -46,20 +47,17 @@ class SheetNotFoundError(BaseExceptionWithUIMessage):
 
 
 class VocabularyFileNotFoundError(BaseExceptionWithUIMessage):
-    error_message = "File with vocabulary at the path: `{file_path}` was not found."
-
     def __init__(self, file_path: str):
+        super().__init__()
         self.file_path = file_path
 
     def message(self) -> str:
         return self.error_message.format(file_path=self.file_path)
 
 
-class InvalidSchemeError(Exception):
-    error_message = "The selected scheme does not fit the sheet. Sheet name: `{sheet_name}`. \n" \
-                    "Please check that the sheet has all the columns specified in the scheme."
-
+class InvalidSchemeError(BaseExceptionWithUIMessage):
     def __init__(self, sheet_name: str) -> None:
+        super().__init__()
         self.sheet_name = sheet_name
 
     def message(self) -> str:
@@ -67,13 +65,8 @@ class InvalidSchemeError(Exception):
 
 
 class InvalidStatusError(BaseExceptionWithUIMessage):
-    error_message = "An error occurred while processing the statuses in the status " \
-                    "column of the sheet: `{sheet_name}`. \n" \
-                    "Status column index was `{status_column_index}`; \n" \
-                    "Status that caused the error was `{status}` (on line `{line_index}`); \n" \
-                    "Check that the status name is allowed and that it has the index of power(must be greater than 0)."
-
     def __init__(self, sheet_name: str, status_column_index: int, status: str, error_line_index: int):
+        super().__init__()
         self.formatted_message = self.error_message.format(
             sheet_name=sheet_name,
             status_column_index=status_column_index,
@@ -86,10 +79,8 @@ class InvalidStatusError(BaseExceptionWithUIMessage):
 
 
 class InvalidRangeOfWordsError(BaseExceptionWithUIMessage):
-    error_message = "The range you specified is invalid.\n" \
-                    "Your range must be a subrange of range [{start}, {end}] to be valid."
-
     def __init__(self, start: int, end: int):
+        super().__init__()
         self.formatted_message = self.error_message.format(start=start, end=end)
 
     def message(self) -> str:
@@ -97,10 +88,8 @@ class InvalidRangeOfWordsError(BaseExceptionWithUIMessage):
 
 
 class NoWordsMatchingSettings(BaseExceptionWithUIMessage):
-    error_message = "There were no words matching the specified settings. \n" \
-                    "(No words with status {status} in range [{range_start}, {range_stop}])"
-
     def __init__(self, status: str, range_start: int, range_stop: int) -> None:
+        super().__init__()
         self.formatted_message = self.error_message.format(status=status, range_start=range_start,
                                                            range_stop=range_stop)
 
@@ -109,16 +98,16 @@ class NoWordsMatchingSettings(BaseExceptionWithUIMessage):
 
 
 class ExcelAppOpenedError(BaseExceptionWithUIMessage):
-    error_message = "We can't save your results when your Excel app is opened. \n" \
-                    "Please close it and press `Stop Dictation`."
+    def __init__(self):
+        super().__init__()
 
     def message(self) -> str:
         return self.error_message
 
 
 class NarrationError(BaseExceptionWithUIMessage):
-    error_message = "Couldn't narrate. Narrating turned off. \n" \
-                    "Establish Internet connection and relaunch the dictation to turn on it back on."
+    def __init__(self):
+        super().__init__()
 
     def message(self) -> str:
         return self.error_message

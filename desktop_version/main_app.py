@@ -2,8 +2,9 @@ from typing import Callable, Union
 
 import flet as ft
 
+from user_settings import SETTINGS
 from dictation_window import DictationControls
-from file_window import PathToVocabularyControls
+from file_window import FileWindow
 from scheme_managing_window import SchemeManagingControls
 from help_window import HelpWindow
 
@@ -31,25 +32,33 @@ class NavigationBarLabel(ft.Text):
 
 
 class MenuBar(ft.Row):
+    dictation_label = "dictation-label"
+    schemes_label = "schemes-label"
+    scheme_creation_label = "scheme-creation-label"
+    scheme_deletion_label = "scheme-deletion-label"
+    file_label = "file-label"
+    help_label = "help-label"
+
     def __init__(self, navigation_function: Callable):
+        SETTINGS.translate_widget(self.__class__)
         self.dictation_window_button = NavigationBarLabel(
-            "Dictation",
+            self.dictation_label,
             lambda: navigation_function("dictation")
         )
 
         self.scheme_managing_popup = ft.PopupMenuButton(
             content=NavigationBarLabel(
-                "Schemes",
+                self.schemes_label,
                 None,
             ),
             items=[
                 ft.PopupMenuItem(
-                    text="Scheme Creation",
+                    text=self.scheme_creation_label,
                     on_click=lambda x: navigation_function("scheme_creation")
                 ),
 
                 ft.PopupMenuItem(
-                    text="Scheme Deletion",
+                    text=self.scheme_deletion_label,
                     on_click=lambda x: navigation_function("scheme_deletion")
                 ),
             ],
@@ -61,12 +70,12 @@ class MenuBar(ft.Row):
                 ),"""
 
         self.vocabulary_path_window_button = NavigationBarLabel(
-            "File",
+            self.file_label,
             lambda: navigation_function("file")
         )
 
         self.help_window_button=NavigationBarLabel(
-            "Help",
+            self.help_label,
             lambda: navigation_function("help")
         )
 
@@ -98,12 +107,11 @@ class MainPage:
 
         self.dictation_controls = DictationControls(self.page)
         self.schemes = SchemeManagingControls(self.page)
-        self.vocabulary_path_controls = PathToVocabularyControls(self.page.window_width)
+        self.vocabulary_path_controls = FileWindow(self.page.window_width)
 
         self.dictation_controls.visible = True
         self.schemes.visible = False
         self.vocabulary_path_controls.visible = False
-
         self.help = HelpWindow(self.page)
         self.help.visible = False
 
@@ -146,7 +154,7 @@ class MainPage:
 
 
 def main(page: ft.Page):
-    MainPage(page)
+    s = MainPage(page)
 
 
 if __name__ == "__main__":

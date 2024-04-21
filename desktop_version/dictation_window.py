@@ -4,9 +4,10 @@ from enum import Enum
 import pandas as pd
 import flet as ft
 
+from user_settings import SETTINGS
 from exceptions import BaseExceptionWithUIMessage, InvalidRangeOfWordsError, \
     ExcelAppOpenedError, NarrationError
-from core import SheetScheme, SETTINGS, ExcelParser, SheetToSchemeCompatibilityChecker, \
+from core import SheetScheme, ExcelParser, SheetToSchemeCompatibilityChecker, \
     WordsGetter, Dictation, DictationContent, Choice, AnswerCheckedResponse, Narrator
 
 
@@ -17,25 +18,32 @@ class AnswerCorrectness(Enum):
 
 
 class DictationRunControls(ft.Column):
-    translation_label_text = "Translation of the current word: {}"
-    answer_correctness_relations = {
-        AnswerCorrectness.CORRECT: ["Right.", "green"],
-        AnswerCorrectness.INCORRECT: ["Wrong. You typed: `{}`", "red"],
-        AnswerCorrectness.WITH_HINT: ["Answer Shown. You will be asked to type it again afterwards.", "yellow"]
-    }
-
-    dictation_completed_message = "Congratulations! You have completed the dictation. \n" \
-                                  "The statuses of the words in your sheet have been updated."
-    dictation_stopped_message = "Dictation was stopped. The statuses of the words in your sheet have been updated."
-    answer_shown_instructions = "The word(s) was(were): {}. Now type it(them) to remember."
-    translation_text_template = "Translation: {}"
-    instructions_text_template = "Instructions: {}"
-    information_about_the_word_template = "Information about the word: {}"
-    no_information_message = "There was no information about that word."
-    previous_word_label_first_message = "Here will be your previous answer."
-    additional_information_label_first_message = "Here will be the information about the previous answer."
+    translation_label_text = "translation-label-text"
+    dictation_completed_message = "dictation-completed-message"
+    dictation_stopped_message = "dictation-stopped-message"
+    answer_shown_instructions = "answer-shown-instructions"
+    translation_text_template = "translation-text-template"
+    instructions_text_template = "instructions-text-template"
+    information_about_the_word_template = "information-about-the-word-template"
+    no_information_message = "no-information-message"
+    previous_word_label_first_message = "previous-word-label-first-message"
+    additional_information_label_first_message = "additional-information-label-first-message"
+    stop_dictation_button = "stop-dictation"
+    show_answer_button = "show-answer"
+    previous_word_information = "previous-word-information"
+    current_word_information = "current-word-information"
+    right_prompt = "right-prompt"
+    wrong_prompt = "wrong-prompt"
+    answer_shown_prompt = "answer-shown-prompt"
 
     def __init__(self, page: ft.Page, exit_dictation: Callable, block_width: int):
+        SETTINGS.translate_widget(self.__class__)
+        self.answer_correctness_relations = {
+            AnswerCorrectness.CORRECT: [self.right_prompt, "green"],
+            AnswerCorrectness.INCORRECT: [self.wrong_prompt, "red"],
+            AnswerCorrectness.WITH_HINT: [self.answer_shown_prompt, "yellow"]
+        }
+
         self.page = page
         self.exit_dictation = exit_dictation
         self.block_width = block_width
@@ -70,19 +78,19 @@ class DictationRunControls(ft.Column):
 
         self.answer_correctness_indicator = ft.Text(size=20)
 
-        self.stop_dictation_button = ft.ElevatedButton("Stop Dictation", on_click=self.stop_dictation_request)
-        self.show_answer_button = ft.ElevatedButton("Show answer", on_click=self.show_answer)
+        self.stop_dictation_button = ft.ElevatedButton(self.stop_dictation_button, on_click=self.stop_dictation_request)
+        self.show_answer_button = ft.ElevatedButton(self.show_answer_button, on_click=self.show_answer)
 
         self.errors_label = ft.Text(color="red")
 
         self.previous_word_block_title = ft.Text(
-            "Information about the previous word.",
+            self.previous_word_information,
             style=ft.TextThemeStyle.TITLE_LARGE,
             text_align=ft.TextAlign.CENTER
         )
 
         self.current_word_block_title = ft.Text(
-            "Current word.",
+            self.current_word_information,
             style=ft.TextThemeStyle.TITLE_LARGE,
             text_align=ft.TextAlign.CENTER
         )
@@ -236,18 +244,20 @@ class DictationRunControls(ft.Column):
 
 class SchemeChoiceControls(ft.Column):
     schemes_key = "schemes"
-    no_schemes_message = "You do not have any schemes configured. Please go to schemes " \
-                         "creation panel and create a scheme to proceed."
+    no_schemes_message = "no-schemes-message"
+    scheme_choice_label = "scheme-choice-label"
+    scheme_choice_hint_text = "scheme-choice-hint-text"
 
     def __init__(self, scheme_chosen_function: Callable):
+        SETTINGS.translate_widget(self.__class__)
         self.schemes = SETTINGS.get(self.schemes_key)
         self.schemes_dropdown = ft.Dropdown(
             options=[ft.dropdown.Option(i) for i in self.schemes.keys()],
             on_change=lambda x: scheme_chosen_function(x.control.value),
             autofocus=True,
 
-            label="Scheme Name",
-            hint_text="Which scheme do you want to practice?"
+            label=self.scheme_choice_label,
+            hint_text=self.scheme_choice_hint_text
         )
 
         self.no_schemes_label = ft.Text(color="red")
@@ -285,16 +295,25 @@ class SchemeChoiceControls(ft.Column):
 
 class DictationRunSettingsControls(ft.Column):
     target_states = ["NEW", "NORMAL", "NEEDS_REVISION", "all"]
+    range_choice_label = "range-choice-label"
+    range_start_label = "range-start-label"
+    range_end_label = "range-end-label"
+    target_choice_label = "target-choice-label"
+    target_choice_hint_text = "target-choice-hint-text"
+    with_narration_label = "with-narration-label"
+    shuffle_words_label = "shuffle-words-label"
+    start_dictation_label = "start-dictation-label"
 
     def __init__(self, page: ft.Page, start_dictation_function: Callable):
+        SETTINGS.translate_widget(self.__class__)
         self.page = page
         self.start_dictation_function = start_dictation_function
 
         self.sheet_processing_error_label = ft.Text(color="red")
 
-        self.range_label = ft.Text("Range: ")
-        self.range_start = ft.TextField(label="from", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
-        self.range_end = ft.TextField(label="to", width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
+        self.range_label = ft.Text(self.range_choice_label)
+        self.range_start = ft.TextField(label=self.range_start_label, width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
+        self.range_end = ft.TextField(label=self.range_end_label, width=page.width // 8, keyboard_type=ft.KeyboardType.NUMBER)
 
         self.range_controls = ft.Row(
             [self.range_label, self.range_start, self.range_end],
@@ -303,18 +322,18 @@ class DictationRunSettingsControls(ft.Column):
 
         self.target_choice = ft.Dropdown(
             options=[ft.dropdown.Option(i) for i in self.target_states],
-            label="Word Status",
-            hint_text="Words with what status you want to practice?"
+            label=self.target_choice_label,
+            hint_text=self.target_choice_hint_text
         )
         self.target_choice.value = "NEW"
 
-        self.with_narrator_checkbox = ft.Checkbox(label="With Narration?")
+        self.with_narrator_checkbox = ft.Checkbox(label=self.with_narration_label)
         self.with_narrator_checkbox.value = True
 
-        self.with_shuffle_checkbox = ft.Checkbox(label="Shuffle Words?")
+        self.with_shuffle_checkbox = ft.Checkbox(label=self.shuffle_words_label)
         self.with_shuffle_checkbox.value = True
 
-        self.start_dictation_button = ft.ElevatedButton("Start Dictation", on_click=self.send_dictation_settings)
+        self.start_dictation_button = ft.ElevatedButton(self.start_dictation_label, on_click=self.send_dictation_settings)
 
         self.error_with_chosen_settings_label = ft.Text(color="red")
 
@@ -408,17 +427,16 @@ class DictationRunSettingsControls(ft.Column):
 
 
 class DictationSettingsControls(ft.Column):
-
-    no_vocabulary_path_set_message = "You have no vocabulary file configured. \n" \
-                                                      "Please go to `File` (If it is your first time using " \
-                                     "the app go to `Help`)."
-    statuses_updated_message = "Dictation finished! \nThe statuses of the words have been updated."
+    no_vocabulary_path_set_message = "no-vocabulary-path-set-message"
+    statuses_updated_message = "statuses-updated-message"
+    dictation_settings_label = "dictation-settings-label"
 
     def __init__(self, page: ft.Page, send_words_function: Callable):
+        SETTINGS.translate_widget(self.__class__)
         width = page.window_width // 3 - 20
         self.send_words_function = send_words_function
         self.no_vocabulary_path_set_label = ft.Text(color="red")
-        self.section_label = ft.Text("Dictation Settings", style=ft.TextThemeStyle.TITLE_LARGE)
+        self.section_label = ft.Text(self.dictation_settings_label, style=ft.TextThemeStyle.TITLE_LARGE)
 
         self.scheme_choice_controls = SchemeChoiceControls(self.fill_run_settings)
         if not SETTINGS.vocabulary_path_valid:

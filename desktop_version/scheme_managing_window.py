@@ -5,8 +5,9 @@ import pandas as pd
 import flet as ft
 from gtts.lang import tts_langs
 
+from user_settings import SETTINGS
 from exceptions import SchemeExistsError, InvalidIndexesError
-from core import SETTINGS, SheetScheme
+from core import SheetScheme
 
 
 def event_with_page_update(func: Callable) -> Callable:
@@ -25,32 +26,46 @@ def schemes_as_options():
 class AllowedNarrationLanguages:
     languages = tts_langs()
 
+    no_narration = "no-narration"
+
+    def __init__(self):
+        SETTINGS.translate_widget(self.__class__)
+
     @classmethod
     def is_allowed(cls, abbreviation: str) -> bool:
         return cls.languages.get(abbreviation, False) is not False
 
     @classmethod
     def as_options(cls) -> list[ft.dropdown.Option]:
-        options = [ft.dropdown.Option(key=False, text="No narration")]
-        options += [ft.dropdown.Option(key=i[0], text=i[1]+f" ({i[0]})") for i in cls.languages.items()]
+        options = [ft.dropdown.Option(key=False, text=cls.no_narration)]
+        options += [ft.dropdown.Option(key=i[0], text=i[1] + f" ({i[0]})") for i in cls.languages.items()]
         return options
 
 
 class WordToCheckSchemeControls(ft.Column):
+    instructions_input_label = "instructions-input-label"
+    instructions_input_hint_text = "instructions-input-hint-text"
+    word_to_check_input_label = "word-to-check-input-label"
+    word_to_check_input_hint_text = "word-to-check-input-hint-text"
+    information_input_label = "information-input-label"
+    information_input_hint_text = "information-input-hint-text"
+    no_additional_information = "no-additional_information"
+
     def __init__(self, width: int = 300):
+        SETTINGS.translate_widget(self.__class__)
         self._instructions_input = ft.TextField(
-            label="Instructions for checking",
-            hint_text="Give instructions, so you know how to answer.",
+            label=self.instructions_input_label,
+            hint_text=self.instructions_input_hint_text,
             multiline=True,
             min_lines=1
         )
         self._word_to_check_column_index_input = ft.Dropdown(
-            label="Column To Check",
-            hint_text="Which column contains the value you want to check?"
+            label=self.word_to_check_input_label,
+            hint_text=self.word_to_check_input_hint_text
         )
         self._special_information_column_index_input = ft.Dropdown(
-            label="Column with Additional Information(Optional)",
-            hint_text="Which column contains the additional information about the word checked?"
+            label=self.information_input_label,
+            hint_text=self.information_input_hint_text
         )
         self._controls_list = [self._instructions_input, self._word_to_check_column_index_input,
                                self._special_information_column_index_input]
@@ -60,15 +75,15 @@ class WordToCheckSchemeControls(ft.Column):
 
     def add_options(self, options: list[ft.dropdown.Option]):
         self._word_to_check_column_index_input.options = deepcopy(options)
-        self._special_information_column_index_input.options = deepcopy(options)+[
-            ft.dropdown.Option(key=False, text="No additional information")
+        self._special_information_column_index_input.options = deepcopy(options) + [
+            ft.dropdown.Option(key=False, text=self.no_additional_information)
         ]
         self.disabled = False
 
     def get_values(self) -> tuple[str, int, int]:
         info = self._special_information_column_index_input.value
         print(info)
-        info = None if info == "false" or info is None else int(info)-1
+        info = None if info == "false" or info is None else int(info) - 1
         return self._instructions_input.value, int(self._word_to_check_column_index_input.
                                                    value) - 1, info
 
@@ -79,21 +94,28 @@ class WordToCheckSchemeControls(ft.Column):
 
 
 class SchemeDeletionControls(ft.Column):
-    _scheme_deleted_message_template = "Scheme `{}` was successfully deleted."
+    _scheme_deleted_message_template = "scheme-deleted-message-template"
+    scheme_deletion = "scheme-deletion"
+    schemes_label = "schemes-label"
+    schemes_hint_text = "schemes-hint-text"
+    delete_scheme_label = "delete-scheme-label"
+    no_schemes_configured = "no-schemes-configured"
+    choose_scheme = "choose-scheme"
 
     def __init__(self, width: int):
-
+        SETTINGS.translate_widget(self.__class__)
         self.block_title = ft.Text(
-            "Scheme Deletion",
+            self.scheme_deletion,
             style=ft.TextThemeStyle.TITLE_LARGE
         )
 
         self._schemes = ft.Dropdown(
-            label="Scheme To Delete",
-            hint_text="Choose what scheme you want to delete",
+            label=self.schemes_label,
+            hint_text=self.schemes_hint_text,
             autofocus=True,
         )
-        self._delete_scheme_button = ft.ElevatedButton("Delete", on_click=self.delete_scheme, width=width//2)
+        self._delete_scheme_button = ft.ElevatedButton(self.delete_scheme_label, on_click=self.delete_scheme,
+                                                       width=width // 2)
         self._error_label = ft.Text(color="red")
         self._error_label.visible = False
         self._scheme_deleted_label = ft.Text(color="green")
@@ -104,7 +126,7 @@ class SchemeDeletionControls(ft.Column):
                 self._schemes, self._delete_scheme_button,
                 self._error_label,
                 self._scheme_deleted_label
-            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, width=width//2)],
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, width=width // 2)],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
             width=width
@@ -119,8 +141,7 @@ class SchemeDeletionControls(ft.Column):
         if not schemes:
             self._delete_scheme_button.disabled = True
             self._error_label.visible = True
-            self._error_label.value = "You do not have any schemes configured. Please go to schemes " \
-                                      "creation panel and create a scheme to proceed."
+            self._error_label.value = self.no_schemes_configured
 
     def reload(self):
         self._error_label.value = ""
@@ -133,7 +154,7 @@ class SchemeDeletionControls(ft.Column):
         scheme_name = self._schemes.value
         scheme = SETTINGS.schemes.get(scheme_name, False)
         if not scheme:
-            self._error_label.value = "Choose the scheme to delete."
+            self._error_label.value = self.choose_scheme
             return
 
         SETTINGS.schemes.pop(scheme_name)
@@ -147,72 +168,93 @@ class SchemeDeletionControls(ft.Column):
 
 
 class SchemeCreationControls(ft.Column):
-    _scheme_created_message_template = "Scheme `{}` was successfully created."
+    _scheme_created_message_template = "scheme-created-message-template"
+    top_title_text = "top-title-text"
+    general_scheme_parameters_title = "general-scheme-parameters-title"
+    sheet_choice_label = "sheet-choice-label"
+    sheet_choice_hint_text = "sheet-choice-hint-text"
+    scheme_name_label = "scheme-name-label"
+    scheme_name_hint_text = "scheme-name-hint-text"
+    translation_column_input_label = "translation-column-input-label"
+    translation_column_input_hint_text = "translation-column-input-hint-text"
+    word_status_column_input_label = "word-status-column-input-label"
+    word_status_column_input_hint_text = "word-status-column-input-hint-text"
+    narration_language_input_label = "narration-language-input-label"
+    narration_language_input_hint_text = "narration-language-input-hint-text"
+
+    test_blocks_title = "test-blocks-title"
+    add_test_block = "add-test-block"
+    remove_test_block = "remove-test-block"
+    create_scheme = "create-scheme"
+    fill_fields = "fill-fields"
+    last_test_block = "last-test-block"
+    no_narration = "no-narration"
 
     def __init__(self, overall_width: int = 600):
+        SETTINGS.translate_widget(self.__class__)
         self.overall_width = overall_width
         self._file, self._sheets = None, None
 
-        self._title = ft.Text(value="Scheme Creation", style=ft.TextThemeStyle.TITLE_LARGE)
+        self._title = ft.Text(value=self.top_title_text, style=ft.TextThemeStyle.TITLE_LARGE)
 
         self._general_scheme_settings_title = ft.Text(
-            value="General Parameters of the Scheme",
+            value=self.general_scheme_parameters_title,
             style=ft.TextThemeStyle.TITLE_MEDIUM
         )
 
         self._sheet_choice = ft.Dropdown(
             on_change=self._fill_dropdowns,
             autofocus=True,
-            label="Excel Sheet",
-            hint_text="What sheet are you creating the scheme for?"
+            label=self.sheet_choice_label,
+            hint_text=self.sheet_choice_hint_text
         )
         self._sheet_choice.disabled = True
 
         self._scheme_name = ft.TextField(
-            label="Name of your scheme",
-            hint_text="How would you like to name your scheme?"
+            label=self.scheme_name_label,
+            hint_text=self.scheme_name_hint_text
         )
 
         self._translation_column_index_input = ft.Dropdown(
-            label="Translation Column",
-            hint_text="Which column contains the translation of the word?"
+            label=self.translation_column_input_label,
+            hint_text=self.translation_column_input_hint_text
         )
         self._word_status_column_index_input = ft.Dropdown(
-            label="Status Column",
-            hint_text="Which column contains the status of the word?"
+            label=self.word_status_column_input_label,
+            hint_text=self.word_status_column_input_hint_text
         )
         self._narration_language_input = ft.Dropdown(
-            label="Narration Language",
-            hint_text="The language of the words you are learning?"
+            label=self.narration_language_input_label,
+            hint_text=self.narration_language_input_hint_text
         )
 
         self._empty_separator = ft.Container(height=30)
 
         self._test_blocks_managing_title = ft.Text(
-            "Test Blocks",
+            self.test_blocks_title,
             style=ft.TextThemeStyle.TITLE_MEDIUM
         )
 
-        self._test_blocks = [WordToCheckSchemeControls(overall_width//4)]
+        self._test_blocks = [WordToCheckSchemeControls(overall_width // 4)]
         self._test_blocks_column = ft.Column([i for i in self._test_blocks])
 
         self._errors_label = ft.Text(color="red")
         self._scheme_created_label = ft.Text(color="green")
 
         self._add_test_block_button = ft.ElevatedButton(
-            "Add a test block",
+            self.add_test_block,
             on_click=self._add_test_block,
             width=200,
         )
         self._remove_test_block_button = ft.ElevatedButton(
-            text="Remove last test block",
+            text=self.remove_test_block,
             on_click=self._remove_test_block,
             width=200,
         )
 
         self._test_blocks_managing_buttons = ft.Column(
             controls=[self._add_test_block_button, self._remove_test_block_button],
-            width=overall_width//5,
+            width=overall_width // 5,
         )
         self._test_blocks_row = ft.Row(
             controls=self._test_blocks,
@@ -228,7 +270,7 @@ class SchemeCreationControls(ft.Column):
         )
 
         self._create_scheme_button = ft.ElevatedButton(
-            "Create Scheme",
+            self.create_scheme,
             on_click=self._create_scheme,
             disabled=True
         )
@@ -254,7 +296,7 @@ class SchemeCreationControls(ft.Column):
         self.alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
         for i in self._inputs:
-            i.width = overall_width//2
+            i.width = overall_width // 2
         self._test_blocks_managing.width = overall_width - 20
 
     def reload(self):
@@ -292,7 +334,7 @@ class SchemeCreationControls(ft.Column):
         except (InvalidIndexesError, SchemeExistsError) as e:
             self._errors_label.value = e.message()
         except (TypeError, AttributeError) as e:
-            self._errors_label.value = "Fill in all the fields."
+            self._errors_label.value = self.fill_fields
         self.update()
 
     def _build_scheme(self) -> dict[str, Union[int, str, list[dict[str, Union[str, int]]]]]:
@@ -337,7 +379,7 @@ class SchemeCreationControls(ft.Column):
     @event_with_page_update
     def _remove_test_block(self, e: ft.ControlEvent):
         if len(self._test_blocks) == 1:
-            self._errors_label.value = "A scheme must have at least one test block."
+            self._errors_label.value = self.last_test_block
             return
         self._test_blocks.pop()
         self._update_test_block_row()
@@ -350,14 +392,14 @@ class SchemeCreationControls(ft.Column):
         self._translation_column_index_input.options = deepcopy(column)
         self._word_status_column_index_input.options = deepcopy(column)
         self._narration_language_input.options = AllowedNarrationLanguages.as_options()
-        self._narration_language_input.value = "No narration"
+        self._narration_language_input.value = self.no_narration
         for i in self._test_blocks:
             i.add_options(column)
         self.update()
 
     def _update_test_block_row(self):
-        max_width = self.overall_width-self.overall_width//4
-        desired_width = len(self._test_blocks)*self._test_blocks[0].width + 20
+        max_width = self.overall_width - self.overall_width // 4
+        desired_width = len(self._test_blocks) * self._test_blocks[0].width + 20
         width = max_width if desired_width > max_width else desired_width
         self._test_blocks_row.width = width
         self._test_blocks_row.controls = self._test_blocks
@@ -365,7 +407,8 @@ class SchemeCreationControls(ft.Column):
     def _get_columns(self) -> list[ft.dropdown.Option]:
         sheet_name = self._sheet_choice.value
         sheet: pd.DataFrame = self._file.parse(sheet_name)
-        return [ft.dropdown.Option(key=int(index), text=f"{index} - {name}") for index, name in enumerate(sheet.columns, start=1)]
+        return [ft.dropdown.Option(key=int(index), text=f"{index} - {name}") for index, name in
+                enumerate(sheet.columns, start=1)]
 
     def _fill_sheet_choice_options(self):
         self._file, self._sheets = self._parse_excel(SETTINGS.path)
@@ -380,17 +423,17 @@ class SchemeCreationControls(ft.Column):
 
 
 class SchemeManagingControls(ft.Column):
-
-    no_vocabulary_file_message = "You have no vocabulary file configured. Please go to `File`."
+    no_vocabulary_file_message = "no-vocabulary-file"
 
     def __init__(self, page: ft.Page):
+        SETTINGS.translate_widget(self.__class__)
         self.page = page
 
         self.no_vocabulary_file_label = ft.Text(color="red", size=20)
 
-        self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width-20)
+        self.scheme_creation = SchemeCreationControls(overall_width=self.page.window_width - 20)
 
-        self.scheme_deletion = SchemeDeletionControls(width=self.page.window_width-20)
+        self.scheme_deletion = SchemeDeletionControls(width=self.page.window_width - 20)
         self.scheme_deletion.visible = False
 
         self.navigation_routes = {
