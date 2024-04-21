@@ -1,0 +1,143 @@
+{
+  "PathToVocabularyControls": {
+    "no-path-set": "You have no vocabulary file chosen. Please specify path to your vocabulary xlsx file.",
+    "invalid-path": "Path `{}` does not exist.",
+    "invalid-extension": "File with vocabulary must have `.xlsx` extension.",
+    "current-path": "Path to the file with vocabulary:\n {}",
+    "vocabulary-file-input-label": "path to vocabulary",
+    "set-path-label": "Set Path"
+  },
+  "AllowedNarrationLanguages": {
+    "no-narration": "No narration"
+  },
+  "WordToCheckSchemeControls": {
+    "instructions-input-label": "Instructions for checking",
+    "instructions-input-hint-text":"Give instructions, so you know how to answer.",
+    "word-to-check-input-label": "Column To Check",
+    "word-to-check-input-hint-text":"Which column contains the value you want to check?",
+    "information-input-label":  "Column with Additional Information(Optional)",
+    "information-input-hint-text": "Which column contains the additional information about the word checked?",
+    "no-additional-information": "No additional information"
+  },
+  "SchemeDeletionControls": {
+    "scheme-deleted-message-template":  "Scheme `{}` was successfully deleted.",
+    "scheme-deletion":  "Scheme Deletion",
+    "schemes-label":  "Scheme To Delete",
+    "schemes-hint-text":  "Choose what scheme you want to delete",
+    "delete-scheme-label":  "Delete",
+    "no-schemes-configured":  "You do not have any schemes configured. Please go to schemes creation panel and create a scheme to proceed.",
+    "choose-scheme":  "Choose the scheme to delete."
+  },
+  "SchemeCreationControls": {
+    "scheme-created-message-template":"Scheme `{}` was successfully created.",
+	"top-title-text":"Scheme Creation",
+	"general-scheme-parameters-title":"General Parameters of the Scheme",
+	"sheet-choice-label":"Excel Sheet",
+	"sheet-choice-hint-text":"What sheet are you creating the scheme for?",
+	"scheme-name-label":"Name of your scheme",
+	"scheme-name-hint-text":"How would you like to name your scheme?",
+	"translation-column-input-label":"Translation Column",
+	"translation-column-input-hint-text":"Which column contains the translation of the word?",
+	"word-status-column-input-label":"Status Column",
+	"word-status-column-input-hint-text":"Which column contains the status of the word?",
+	"narration-language-input-label":"Narration Language",
+	"narration-language-input-hint-text":"The language of the words you are learning?",
+    "test-blocks-title": "Test Blocks",
+	"add-test-block": "Add a test block",
+	"remove-test-block": "Remove last test block",
+	"create-scheme": "Create Scheme",
+	"fill-fields": "Fill in all the fields.",
+	"last-test-block": "A scheme must have at least one test block.",
+	"no-narration": "No narration"
+  },
+  "SchemeManagingControls": {
+    "no-vocabulary-file": "You have no vocabulary file configured. Please go to `File`."
+  },
+  "NavigationSideBar": {
+    "destination-start": "Quick Start",
+    "destination-statuses":"Word Statuses",
+    "destination-synonyms": "Synonyms and word variations"
+  },
+  "SchemeExistsError": {
+    "error-message": "Scheme with the name `{scheme_name}` already exists. Give your scheme a different name."
+  },
+  "InvalidIndexesError": {
+    "error-message": ["Indexes of translation and status columns must be unique.",
+                      "Indexes of word and information columns must not be the same."]
+  },
+  "SheetNotFoundError": {
+    "error-message": "The sheet name configured for that scheme is `{sheet_name}`, but that sheet is not present in the file `{file_path}`."
+  },
+  "VocabularyFileNotFoundError": {
+    "error-message": "File with vocabulary at the path: `{file_path}` was not found."
+  },
+  "InvalidSchemeError": {
+    "error-message": "The selected scheme does not fit the sheet. Sheet name: `{sheet_name}`. \nPlease check that the sheet has all the columns specified in the scheme."
+  },
+  "InvalidStatusError": {
+    "error-message": "An error occurred while processing the statuses in the status column of the sheet: `{sheet_name}`. \nStatus column index was `{status_column_index}`; \nStatus that caused the error was `{status}` (on line `{line_index}`); \nCheck that the status name is allowed and that it has the index of power(must be greater than 0)."
+  },
+  "InvalidRangeOfWordsError": {
+    "error-message": "The range you specified is invalid.\nYour range must be a subrange of range [{start}, {end}] to be valid."
+  },
+  "NoWordsMatchingSettings": {
+    "error-message": "There were no words matching the specified settings. \n(No words with status {status} in range [{range_start}, {range_stop}])"
+  },
+  "ExcelAppOpenedError": {
+    "error-message":"We can't save your results when your Excel app is opened. \nPlease close it and press `Stop Dictation`."
+  },
+  "NarrationError": {
+    "error-message": "Couldn't narrate. Narrating turned off. \nEstablish Internet connection and relaunch the dictation to turn on it back on."
+  },
+  "DictationRunControls": {
+    "translation-label-text": "Translation of the current word: {}",
+    "dictation-completed-message": "Congratulations! You have completed the dictation. The statuses of the words in your sheet have been updated.",
+	"dictation-stopped-message": "Dictation was stopped. The statuses of the words in your sheet have been updated.",
+	"answer-shown-instructions": "The word(s) was(were): {}. Now type it(them) to remember.",
+	"translation-text-template": "Translation: {}",
+	"instructions-text-template": "Instructions: {}",
+	"information-about-the-word-template": "Information about the word: {}",
+	"no-information-message": "There was no information about that word.",
+	"previous-word-label-first-message": "Here will be your previous answer.",
+	"additional-information-label-first-message": "Here will be the information about the previous answer.",
+	"stop-dictation": "Stop Dictation",
+	"show-answer": "Show answer",
+	"previous-word-information": "Information about the previous word.",
+	"current-word-information": "Current word.",
+    "right-prompt": "Right.",
+	"wrong-prompt": "Wrong. You typed: `{}`",
+	"answer-shown-prompt": "Answer Shown. You will be asked to type it again afterwards."
+  },
+  "SchemeChoiceControls": {
+	"no-schemes-message": "You do not have any schemes configured. Please go to schemes creation panel and create a scheme to proceed.",
+	"scheme-choice-label": "Scheme Name",
+	"scheme-choice-hint-text": "Which scheme do you want to practice?"
+  },
+  "DictationRunSettingsControls": {
+    "range-choice-label": "Range: ",
+	"range-start-label": "from",
+	"range-end-label": "to",
+	"target-choice-label": "Word Status",
+	"target-choice-hint-text": "Words with what status you want to practice?",
+	"with-narration-label": "With Narration?",
+	"shuffle-words-label": "Shuffle Words?",
+	"start-dictation-label": "Start Dictation"
+  },
+  "DictationSettingsControls": {
+    "no-vocabulary-path-set-message": "You have no vocabulary file configured. \nPlease go to `File` (If it is your first time using the app go to `Help`).",
+	"statuses-updated-message": "Dictation finished! \nThe statuses of the words have been updated.",
+	"dictation-settings-label": "Dictation Settings"
+  },
+  "MenuBar": {
+    "dictation-label": "Dictation",
+	"schemes-label": "Schemes",
+	"scheme-creation-label": "Scheme Creation",
+	"scheme-deletion-label": "Scheme Deletion",
+	"file-label": "File",
+	"help-label": "Help"
+  },
+  "AppLanguageControls": {
+    "set-language-label": "Set Langauge",
+    "restart-information": "You will have to restart the app for the change to be applied."
+  }
+}

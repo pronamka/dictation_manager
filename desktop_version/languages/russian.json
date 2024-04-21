@@ -1,0 +1,139 @@
+{
+  "PathToVocabularyControls": {
+    "no-path-set": "У вас не выбран файл словаря. Пожалуйста, укажите путь к файлу .xlsx вашего словаря.",
+    "invalid-path": "Путь `{}` не существует.",
+    "invalid-extension": "Файл словаря должен иметь расширение `.xlsx`",
+    "current-path": "Путь к файлу словаря:\n {}",
+    "vocabulary-file-input-label": "путь к файлу словаря",
+    "set-path-label": "Сохранить путь"
+  },
+  "AllowedNarrationLanguages": {
+    "no-narration": "Без озвучки"
+  },
+  "WordToCheckSchemeControls": {
+    "instructions-input-label": "Инструкция по проверке",
+    "instructions-input-hint-text": "Дайте инструкции, чтобы вы знали, как ответить.",
+    "word-to-check-input-label": "Столбец для проверки",
+    "word-to-check-input-hint-text": "Какой столбец содержит значение, которое вы хотите проверить?",
+    "information-input-label": "Столбец с дополнительной информацией (необязательно)",
+    "information-input-hint-text": "В каком столбце содержится дополнительная информация о проверенном слове?",
+    "no-additional-information": "Никакой дополнительной информации"
+  },
+  "SchemeDeletionControls": {
+    "scheme-deleted-message-template": "Схема `{}` была успешно удалена.",
+    "scheme-deletion": "Удаление схемы",
+    "schemes-label": "Схема для удаления",
+    "schemes-hint-text": "Выберите, какую схему вы хотите удалить",
+    "delete-scheme-label": "Удалить",
+    "no-schemes-configured": "У вас не настроено ни одной схемы. Пожалуйста, перейдите на панель создания схем и создайте схему, чтобы продолжить.",
+    "choose-scheme": "Выберите схему для удаления."
+  },
+  "SchemeCreationControls": {
+    "scheme-created-message-template": "Схема `{}` успешно создана.",
+    "top-title-text": "Создание схемы",
+    "general-scheme-parameters-title": "Общие параметры схемы",
+    "sheet-choice-label": "Лист Excel",
+    "sheet-choice-hint-text": "Для какого листа вы создаете схему?",
+    "scheme-name-label": "Название вашей схемы",
+    "scheme-name-hint-text": "Как бы вы хотели назвать свою схему?",
+    "translation-column-input-label": "Столбец перевода",
+    "translation-column-input-hint-text": "В каком столбце указан перевод слова?",
+    "word-status-column-input-label": "Столбец статуса",
+    "word-status-column-input-hint-text": "В каком столбце указан статус слова?",
+    "narration-language-input-label": "Язык озвучки",
+    "narration-language-input-hint-text": "Язык слов, которые вы изучаете?",
+    "test-blocks-title": "Тестовые блоки",
+    "add-test-block": "Добавить тестовый блок",
+    "remove-test-block": "Удалить последний тестовый блок",
+    "create-scheme": "Создать схему",
+    "fill-fields": "Заполните все поля.",
+    "last-test-block": "Схема должна иметь хотя бы один тестовый блок.",
+    "no-narration": "Без озвучки"
+  },
+  "SchemeManagingControls": {
+    "no-vocabulary-file": "У вас не настроен файл словаря. Пожалуйста, перейдите в «Файл»."
+  },
+  "NavigationSideBar": {
+    "destination-start": "Начало Работы",
+    "destination-statuses":"Статусы слов",
+    "destination-synonyms": "Синонимы и вариации слов"
+  },
+  "SchemeExistsError": {
+    "error-message": "Схема с именем `{scheme_name}` уже существует. Дайте вашей схеме другое имя."
+  },
+  "InvalidIndexesError": {
+    "error-message": ["Индексы столбцов перевода и статуса должны быть различны.",
+                      "Индексы столбцов проверяемого слова и информации к слову не должны совпадать."]
+  },
+  "SheetNotFoundError": {
+    "error-message": "Имя листа, настроенное для этой схемы, — `{sheet_name}`, но этот лист отсутствует в файле `{file_path}`."
+  },
+  "VocabularyFileNotFoundError": {
+    "error-message": "Файл `{file_path}` не найден."
+  },
+  "InvalidSchemeError": {
+    "error-message": "Выбранная схема не подходит к листу. Имя листа: `{sheet_name}`.\nПроверьте, чтобы на листе были все указанные в схеме столбцы."
+  },
+  "InvalidStatusError": {
+    "error-message": "Произошла ошибка при обработке статусов в столбце статуса листа: `{sheet_name}`.\nИндекс столбца состояния был `{status_column_index}`;\nСтатус, вызвавший ошибку, был `{status}` (в строке `{line_index}`);\nУбедитесь, что имя статуса разрешено и имеет индекс (должен быть больше 0)."
+  },
+  "InvalidRangeOfWordsError": {
+    "error-message": "Указанный вами диапазон недействителен.\nЧтобы ваш диапазон был действительным, он должен быть поддиапазоном диапазона [{start}, {end}]."
+  },
+  "NoWordsMatchingSettings": {
+    "error-message": "Не было слов, соответствующих указанным параметрам.\n(Нет слов со статусом {status} в диапазоне [{range_start}, {range_stop}])"
+  },
+  "ExcelAppOpenedError": {
+    "error-message": "Мы не можем сохранить ваши результаты при открытом файле Excel.\nПожалуйста, закройте его и нажмите «Завершить диктант»."
+  },
+  "NarrationError": {
+    "error-message": "Не получилось озвучить. Озвучивание отключено.\nУстановите подключение к Интернету и перезапустите диктант, чтобы снова включить ее."
+  },
+  "DictationRunControls": {
+    "translation-label-text": "Перевод текущего слова: {}",
+    "dictation-completed-message": "Поздравляем! Вы завершили диктант. Статусы слов на вашем листе обновлены.",
+    "dictation-stopped-message": "Диктант был остановлен. Статусы слов на вашем листе обновлены.",
+    "answer-shown-instructions": "Слово(а) было(были): {}. Теперь напечатайте их, чтобы запомнить.",
+    "translation-text-template": "Перевод: {}",
+    "instructions-text-template": "Инструкции: {}",
+    "information-about-the-word-template": "Информация о слове: {}",
+    "no-information-message": "Никакой информации об этом слове не было.",
+    "previous-word-label-first-message": "Здесь будет ваш предыдущий ответ.",
+    "additional-information-label-first-message": "Здесь будет информация о предыдущем ответе.",
+    "stop-dictation": "Остановить диктант",
+    "show-answer": "Показать ответ",
+    "previous-word-information": "Информация о предыдущем слове.",
+    "current-word-information": "Текущее слово.",
+    "right-prompt": "Верно.",
+    "wrong-prompt": "Неверно. Вы набрали: `{}`",
+    "answer-shown-prompt": "Ответ показан. В конце диктанта вам нужно будет ввести его еще раз."
+  },
+  "SchemeChoiceControls": {
+    "no-schemes-message": "У вас не настроено ни одной схемы. Пожалуйста, перейдите на панель создания схем и создайте схему, чтобы продолжить.",
+    "scheme-choice-label": "Имя схемы",
+    "scheme-choice-hint-text": "Диктант по какой схеме вы хотите провести?"
+  },
+  "DictationRunSettingsControls": {
+    "range-choice-label": "Диапазон:",
+    "range-start-label": "от",
+    "range-end-label": "до",
+    "target-choice-label": "Статус слова",
+    "target-choice-hint-text": "Диктант с какими словами вы хотите провести?",
+    "with-narration-label": "С озвучкой?",
+    "shuffle-words-label": "Перемешать слова?",
+    "start-dictation-label": "Начать диктовку"
+  },
+  "DictationSettingsControls": {
+    "no-vocabulary-path-set-message": "У вас не настроен файл словаря.\nПожалуйста, перейдите в «Файл» (если вы впервые используете приложение, перейдите в «Справка»).",
+    "statuses-updated-message": "Диктант окончен!\nСтатусы слов обновлены.",
+    "dictation-settings-label": "Настройки диктанта"
+  },
+  "MenuBar": {
+    "dictation-label": "Диктант",
+    "schemes-label": "Схемы",
+    "scheme-creation-label": "Создание схем",
+    "scheme-deletion-label": "Удаление схем",
+    "file-label": "Файл",
+    "help-label": "Справка"
+  }
+}

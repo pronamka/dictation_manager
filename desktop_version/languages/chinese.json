@@ -1,0 +1,141 @@
+{
+  "PathToVocabularyControls": {
+    "no-path-set": "您没有选择词汇文件。请指定词汇表 xlsx 文件的路径。",
+    "invalid-path": "路径“{}”不存在。",
+    "invalid-extension": "包含词汇的文件必须具有“.xlsx”扩展名。",
+    "current-path": "包含词汇的文件的路径：\n {}",
+    "vocabulary-file-input-label": "词汇之路",
+    "set-path-label": "设置路径"
+  },
+  "AllowedNarrationLanguages": {
+    "no-narration": "无旁白"
+  },
+  "WordToCheckSchemeControls": {
+    "instructions-input-label": "检查说明",
+    "instructions-input-hint-text": "给出指示，以便您知道如何回答。",
+    "word-to-check-input-label": "要检查的列",
+    "word-to-check-input-hint-text": "哪一列包含您要检查的值？",
+    "information-input-label": "附加信息栏（可选）",
+    "information-input-hint-text": "哪一列包含有关已检查单词的附加信息？",
+    "no-additional-information": "没有附加信息"
+  },
+  "SchemeDeletionControls": {
+    "scheme-deleted-message-template": "方案“{}”已成功删除。",
+    "scheme-deletion": "方案删除",
+    "schemes-label": "要删除的方案",
+    "schemes-hint-text": "选择您要删除的方案",
+    "delete-scheme-label": "删除",
+    "no-schemes-configured": "您没有配置任何方案。请转到方案创建面板并创建一个方案以继续。",
+    "choose-scheme": "选择要删除的方案。"
+  },
+  "SchemeCreationControls": {
+    "scheme-created-message-template": "方案“{}”已成功创建。",
+    "top-title-text": "方案创建",
+    "general-scheme-parameters-title": "方案总体参数",
+    "sheet-choice-label": "Excel 工作表",
+    "sheet-choice-hint-text": "您正在为哪张表创建方案？",
+    "scheme-name-label": "您的计划名称",
+    "scheme-name-hint-text": "您想如何命名您的方案？",
+    "translation-column-input-label": "翻译专栏",
+    "translation-column-input-hint-text": "哪一列包含该单词的翻译？",
+    "word-status-column-input-label": "状态栏",
+    "word-status-column-input-hint-text": "哪一列包含单词的状态？",
+    "narration-language-input-label": "叙述语言",
+    "narration-language-input-hint-text": "您正在学习的单词的语言？",
+    "test-blocks-title": "测试块",
+    "add-test-block": "添加测试块",
+    "remove-test-block": "移除最后一个测试块",
+    "create-scheme": "创建方案",
+    "fill-fields": "填写所有字段。",
+    "last-test-block": "一个方案必须至少有一个测试块。",
+    "no-narration": "无旁白"
+  },
+  "SchemeManagingControls": {
+    "no-vocabulary-file": "您没有配置词汇文件。请转到“文件”。"
+  },
+  "NavigationSideBar": {
+    "destination-start": "快速开始",
+    "destination-statuses": "字状态",
+    "destination-synonyms": "同义词和单词变体"
+  },
+  "SchemeExistsError": {
+    "error-message": "名为“{scheme_name}”的方案已存在。为您的方案指定一个不同的名称。"
+  },
+  "InvalidIndexesError": {
+    "error-message": [
+      "翻译和状态列的索引必须是唯一的。",
+      "单词和信息列的索引不能相同。"
+    ]
+  },
+  "SheetNotFoundError": {
+    "error-message": "为该方案配置的工作表名称为“{sheet_name}”，但该工作表不存在于文件“{file_path}”中。"
+  },
+  "VocabularyFileNotFoundError": {
+    "error-message": "未找到路径为“{file_path}”的词汇文件。"
+  },
+  "InvalidSchemeError": {
+    "error-message": "所选方案不适合图纸。工作表名称：“{sheet_name}”。\n请检查工作表是否包含方案中指定的所有列。"
+  },
+  "InvalidStatusError": {
+    "error-message": "处理工作表状态列中的状态时出错：“{sheet_name}”。\n状态列索引为“{status_column_index}”；\n导致错误的状态是“{status}”（在线“{line_index}”）；\n检查状态名称是否允许，并且具有功率索引（必须大于 0）。"
+  },
+  "InvalidRangeOfWordsError": {
+    "error-message": "您指定的范围无效。\n您的范围必须是范围 [{start}, {end}] 的子范围才有效。"
+  },
+  "NoWordsMatchingSettings": {
+    "error-message": "没有与指定设置匹配的单词。\n（在 [{range_start}, {range_stop}] 范围内没有状态为 {status} 的单词）"
+  },
+  "ExcelAppOpenedError": {
+    "error-message": "当您的 Excel 应用程序打开时，我们无法保存您的结果。\n请关闭它并按“停止听写”。"
+  },
+  "NarrationError": {
+    "error-message": "无法叙述。旁白已关闭。\n建立互联网连接并重新启动听写以将其重新打开。"
+  },
+  "DictationRunControls": {
+    "translation-label-text": "当前单词的翻译：{}",
+    "dictation-completed-message": "恭喜！您已完成听写。工作表中单词的状态已更新。",
+    "dictation-stopped-message": "听写停止了。工作表中单词的状态已更新。",
+    "answer-shown-instructions": "单词是：{}。现在输入它（它们）来记住。",
+    "translation-text-template": "翻译： {}",
+    "instructions-text-template": "指示： {}",
+    "information-about-the-word-template": "有关单词的信息：{}",
+    "no-information-message": "没有关于这个词的信息。",
+    "previous-word-label-first-message": "这是您之前的答案。",
+    "additional-information-label-first-message": "这里将是有关先前答案的信息。",
+    "stop-dictation": "停止听写",
+    "show-answer": "显示答案",
+    "previous-word-information": "有关前一个单词的信息。",
+    "current-word-information": "当前词。",
+    "right-prompt": "正确的。",
+    "wrong-prompt": "错误的。您输入：“{}”",
+    "answer-shown-prompt": "答案已显示。之后系统会要求您再次输入。"
+  },
+  "SchemeChoiceControls": {
+    "no-schemes-message": "您没有配置任何方案。请转到方案创建面板并创建一个方案以继续。",
+    "scheme-choice-label": "方案名称",
+    "scheme-choice-hint-text": "您想实践哪种方案？"
+  },
+  "DictationRunSettingsControls": {
+    "range-choice-label": "范围：",
+    "range-start-label": "从",
+    "range-end-label": "到",
+    "target-choice-label": "字状态",
+    "target-choice-hint-text": "你想以什么状态来练习单词？",
+    "with-narration-label": "有旁白吗？",
+    "shuffle-words-label": "洗牌词？",
+    "start-dictation-label": "开始听写"
+  },
+  "DictationSettingsControls": {
+    "no-vocabulary-path-set-message": "您没有配置词汇文件。\n请转到“文件”（如果这是您第一次使用该应用程序，请转到“帮助”）。",
+    "statuses-updated-message": "听写完成！\n单词的状态已更新。",
+    "dictation-settings-label": "听写设置"
+  },
+  "MenuBar": {
+    "dictation-label": "听写",
+    "schemes-label": "方案",
+    "scheme-creation-label": "方案创建",
+    "scheme-deletion-label": "方案删除",
+    "file-label": "文件",
+    "help-label": "帮助"
+  }
+}

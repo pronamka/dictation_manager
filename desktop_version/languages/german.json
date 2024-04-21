@@ -1,0 +1,141 @@
+{
+  "PathToVocabularyControls": {
+    "no-path-set": "Sie haben keine Vokabeldatei ausgewählt. Bitte geben Sie den Pfad zu Ihrer Vokabular-XLSX-Datei an.",
+    "invalid-path": "Pfad „{}“ existiert nicht.",
+    "invalid-extension": "Die Datei mit Vokabeln muss die Erweiterung „.xlsx“ haben.",
+    "current-path": "Pfad zur Datei mit Vokabeln:\n {}",
+    "vocabulary-file-input-label": "Weg zum Wortschatz",
+    "set-path-label": "Pfad festlegen"
+  },
+  "AllowedNarrationLanguages": {
+    "no-narration": "Keine Erzählung"
+  },
+  "WordToCheckSchemeControls": {
+    "instructions-input-label": "Anleitung zur Überprüfung",
+    "instructions-input-hint-text": "Geben Sie Anweisungen, damit Sie wissen, wie Sie antworten sollen.",
+    "word-to-check-input-label": "Zu überprüfende Spalte",
+    "word-to-check-input-hint-text": "Welche Spalte enthält den Wert, den Sie überprüfen möchten?",
+    "information-input-label": "Spalte mit zusätzlichen Informationen (optional)",
+    "information-input-hint-text": "Welche Spalte enthält die Zusatzinformationen zum geprüften Wort?",
+    "no-additional-information": "Keine zusätzlichen Informationen"
+  },
+  "SchemeDeletionControls": {
+    "scheme-deleted-message-template": "Schema „{}“ wurde erfolgreich gelöscht.",
+    "scheme-deletion": "Löschung des Schemas",
+    "schemes-label": "Schema zum Löschen",
+    "schemes-hint-text": "Wählen Sie aus, welches Schema Sie löschen möchten",
+    "delete-scheme-label": "Löschen",
+    "no-schemes-configured": "Sie haben keine Schemata konfiguriert. Bitte gehen Sie zum Bereich zur Schemaerstellung und erstellen Sie ein Schema, um fortzufahren.",
+    "choose-scheme": "Wählen Sie das zu löschende Schema aus."
+  },
+  "SchemeCreationControls": {
+    "scheme-created-message-template": "Schema „{}“ wurde erfolgreich erstellt.",
+    "top-title-text": "Schemaerstellung",
+    "general-scheme-parameters-title": "Allgemeine Parameter des Schemas",
+    "sheet-choice-label": "Excel-Tabelle",
+    "sheet-choice-hint-text": "Für welches Blatt erstellen Sie das Schema?",
+    "scheme-name-label": "Name Ihres Schemas",
+    "scheme-name-hint-text": "Wie möchten Sie Ihr Projekt benennen?",
+    "translation-column-input-label": "Übersetzungsspalte",
+    "translation-column-input-hint-text": "Welche Spalte enthält die Übersetzung des Wortes?",
+    "word-status-column-input-label": "Statusspalte",
+    "word-status-column-input-hint-text": "Welche Spalte enthält den Status des Wortes?",
+    "narration-language-input-label": "Erzählsprache",
+    "narration-language-input-hint-text": "Die Sprache der Wörter, die Sie lernen?",
+    "test-blocks-title": "Testblöcke",
+    "add-test-block": "Fügen Sie einen Testblock hinzu",
+    "remove-test-block": "Letzten Testblock entfernen",
+    "create-scheme": "Schema erstellen",
+    "fill-fields": "Füllen Sie alle Felder aus.",
+    "last-test-block": "Ein Schema muss mindestens einen Testblock haben.",
+    "no-narration": "Keine Erzählung"
+  },
+  "SchemeManagingControls": {
+    "no-vocabulary-file": "Sie haben keine Vokabeldatei konfiguriert. Gehen Sie bitte auf „Datei“."
+  },
+  "NavigationSideBar": {
+    "destination-start": "Schnellstart",
+    "destination-statuses": "Wortstatus",
+    "destination-synonyms": "Synonyme und Wortvarianten"
+  },
+  "SchemeExistsError": {
+    "error-message": "Das Schema mit dem Namen „{scheme_name}“ existiert bereits. Geben Sie Ihrem Schema einen anderen Namen."
+  },
+  "InvalidIndexesError": {
+    "error-message": [
+      "Übersetzungsindizes und Statusspalten müssen eindeutig sein.",
+      "Indizes von Wort- und Informationsspalten dürfen nicht identisch sein."
+    ]
+  },
+  "SheetNotFoundError": {
+    "error-message": "Der für dieses Schema konfigurierte Blattname ist „{sheet_name}“, aber dieses Blatt ist in der Datei „{file_path}“ nicht vorhanden."
+  },
+  "VocabularyFileNotFoundError": {
+    "error-message": "Datei mit Vokabular im Pfad: „{file_path}“ wurde nicht gefunden."
+  },
+  "InvalidSchemeError": {
+    "error-message": "Das ausgewählte Schema passt nicht auf das Blatt. Blattname: „{sheet_name}“.\nBitte überprüfen Sie, ob das Blatt alle im Schema angegebenen Spalten enthält."
+  },
+  "InvalidStatusError": {
+    "error-message": "Beim Verarbeiten der Status in der Statusspalte des Blattes ist ein Fehler aufgetreten: „{Blattname}“.\nStatusspaltenindex war „{status_column_index}“;\nDer Status, der den Fehler verursacht hat, war „{status}“ (in der Zeile „{line_index}“).\nÜberprüfen Sie, ob der Statusname zulässig ist und über den Leistungsindex verfügt (muss größer als 0 sein)."
+  },
+  "InvalidRangeOfWordsError": {
+    "error-message": "Der von Ihnen angegebene Bereich ist ungültig.\nIhr Bereich muss ein Teilbereich des Bereichs [{start}, {end}] sein, um gültig zu sein."
+  },
+  "NoWordsMatchingSettings": {
+    "error-message": "Es gab keine Wörter, die den angegebenen Einstellungen entsprachen.\n(Keine Wörter mit dem Status {status} im Bereich [{range_start}, {range_stop}])"
+  },
+  "ExcelAppOpenedError": {
+    "error-message": "Wir können Ihre Ergebnisse nicht speichern, wenn Ihre Excel-App geöffnet ist.\nBitte schließen Sie es und klicken Sie auf „Diktat stoppen“."
+  },
+  "NarrationError": {
+    "error-message": "Konnte nicht erzählen. Erzählung ausgeschaltet.\nStellen Sie eine Internetverbindung her und starten Sie das Diktat neu, um es wieder einzuschalten."
+  },
+  "DictationRunControls": {
+    "translation-label-text": "Übersetzung des aktuellen Wortes: {}",
+    "dictation-completed-message": "Glückwunsch! Sie haben das Diktat fertiggestellt. Der Status der Wörter in Ihrem Blatt wurde aktualisiert.",
+    "dictation-stopped-message": "Das Diktat wurde gestoppt. Der Status der Wörter in Ihrem Blatt wurde aktualisiert.",
+    "answer-shown-instructions": "Das/die Wort(e) war(en): {}. Geben Sie es jetzt ein, um es sich zu merken.",
+    "translation-text-template": "Übersetzung: {}",
+    "instructions-text-template": "Anweisungen: {}",
+    "information-about-the-word-template": "Informationen zum Wort: {}",
+    "no-information-message": "Es gab keine Informationen zu diesem Wort.",
+    "previous-word-label-first-message": "Hier finden Sie Ihre vorherige Antwort.",
+    "additional-information-label-first-message": "Hier finden Sie Informationen zur vorherigen Antwort.",
+    "stop-dictation": "Stoppen Sie das Diktat",
+    "show-answer": "Zeige die Antwort",
+    "previous-word-information": "Informationen zum vorherigen Wort.",
+    "current-word-information": "Aktuelles Wort.",
+    "right-prompt": "Rechts.",
+    "wrong-prompt": "Falsch. Sie haben Folgendes eingegeben: „{}“.",
+    "answer-shown-prompt": "Antwort angezeigt. Anschließend werden Sie aufgefordert, es noch einmal einzugeben."
+  },
+  "SchemeChoiceControls": {
+    "no-schemes-message": "Sie haben keine Schemata konfiguriert. Bitte gehen Sie zum Bereich zur Schemaerstellung und erstellen Sie ein Schema, um fortzufahren.",
+    "scheme-choice-label": "Schemaname",
+    "scheme-choice-hint-text": "Welches Schema möchten Sie praktizieren?"
+  },
+  "DictationRunSettingsControls": {
+    "range-choice-label": "Reichweite:",
+    "range-start-label": "aus",
+    "range-end-label": "Zu",
+    "target-choice-label": "Wortstatus",
+    "target-choice-hint-text": "Wörter mit welchem ​​Status möchten Sie üben?",
+    "with-narration-label": "Mit Erzählung?",
+    "shuffle-words-label": "Wörter mischen?",
+    "start-dictation-label": "Diktat starten"
+  },
+  "DictationSettingsControls": {
+    "no-vocabulary-path-set-message": "Sie haben keine Vokabeldatei konfiguriert.\nBitte gehen Sie zu „Datei“ (Wenn Sie die App zum ersten Mal verwenden, gehen Sie zu „Hilfe“).",
+    "statuses-updated-message": "Diktat beendet!\nDer Status der Wörter wurde aktualisiert.",
+    "dictation-settings-label": "Diktateinstellungen"
+  },
+  "MenuBar": {
+    "dictation-label": "Diktat",
+    "schemes-label": "Schemata",
+    "scheme-creation-label": "Schemaerstellung",
+    "scheme-deletion-label": "Löschung des Schemas",
+    "file-label": "Datei",
+    "help-label": "Helfen"
+  }
+}
